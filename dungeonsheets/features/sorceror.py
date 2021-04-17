@@ -146,7 +146,12 @@ class TwinnedSpell(Metamagic):
 
     name = "Twinned Spell"
 
+class TransmutedSpell(Feature):
+    """Change spell to acid
 
+    """
+    name = "Transmuted Spell"
+    source = "Sorceror (Jörmun)"
 # Wild Magic
 class WildMagicSurge(Feature):
     """Starting when you choose this origin at 1st level, your spellcasting can

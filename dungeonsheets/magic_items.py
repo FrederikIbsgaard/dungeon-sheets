@@ -262,3 +262,31 @@ class PearlOfPower(MagicItem):
 
     requires_attunement = True
     name = "Pearl of Power"
+
+class ScryingEye(MagicItem):
+    """This item allows a person to cast the scryring spell for up to 10 minutes.
+    Once you have used the item, it can't be used again until the next dawn.
+    """
+    requires_attunement = True
+    name = "Scrying Eye"
+
+class RagnarsStaffOfAcid(MagicItem):
+    """This magic staff can be used as an arcane focus. When you cast a spell 
+    dealing ACID damage to a creature add an extra 1d8 of ACID damage.
+
+    --"Melf's acid arrow " Can be casted at level 3 once per dawn
+
+    """
+    name = "Ragnars Staff of Acid"
+    rarity = "rare"
+    requires_attunement = True
+
+class RingOfSaving(MagicItem):
+    """
+    You gain a +1 bonus to all Saving Throws while wearing this ring.
+
+    """
+    name = "Ring of Saving Throws"
+    ac_bonus = 1
+    requires_attunement = True
+    rarity = 'uncommon'
