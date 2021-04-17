@@ -22,7 +22,7 @@ proj_root = Path(__file__).parent.parent
 
 project = 'dungeonsheets'
 copyright = '2018, Mark Wolfman'
-author = 'Mark Wolfman'
+author = 'Frederik Ibsgaard Knudsen'
 
 # The full version, including alpha/beta/rc tags
 release = open(proj_root/'VERSION').read()
@@ -114,7 +114,7 @@ htmlhelp_basename = 'dungeonsheetsdoc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    # 'papersize': 'a5paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
