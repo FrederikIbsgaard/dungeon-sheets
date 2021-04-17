@@ -147,11 +147,13 @@ class TwinnedSpell(Metamagic):
     name = "Twinned Spell"
 
 class TransmutedSpell(Feature):
-    """Change spell to acid
+    """When you cast a spell that deals a type of damage from the following list, 
+    you can spend 1 sorcery point to change that damage type to one of the other listed types: 
+    acid, cold, fire, lightning, poison, thunder.
 
     """
     name = "Transmuted Spell"
-    source = "Sorceror (Jörmun)"
+    
 # Wild Magic
 class WildMagicSurge(Feature):
     """Starting when you choose this origin at 1st level, your spellcasting can
