@@ -529,11 +529,11 @@ def create_character_pdf(character, basename, flatten=False):
             character.features_text + character.features_and_traits
         ),
         # Inventory
-        "CP": character.cp,
-        "SP": character.sp,
-        "EP": character.ep,
-        "GP": character.gp,
-        "PP": character.pp,
+        "CP": '',
+        "SP": '',
+        "EP": '',
+        "GP": '',
+        "PP": '',
         "Equipment": text_box(character.magic_items_text + character.equipment),
     }
     # Check boxes for proficiencies
