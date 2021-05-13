@@ -70,7 +70,7 @@ pp = 0
 
 # TODO: Put your equipped weapons and armor here
 weapons = ['Quarterstaff', "Dagger", "Dart"]  # Example: ('shortsword', 'longsword')
-magic_items = ('Pearl of Power', 
+magic_items = ('Ring of Saving Throws', 
                 'Scrying Eye',
                 'Ragnars Staff of Acid',)  # Example: ('ring of protection',)
 armor = "None"  # Eg "leather armor"
@@ -78,7 +78,7 @@ shield = "None"  # Eg "shield"
 
 equipment = """Handy Haversack"""
 
-attacks_and_spellcasting = """Ragnars Staff of Acid """
+attacks_and_spellcasting = """"""
 
 # List of known spells
 # Example: spells_prepared = ('magic missile', 'mage armor')
@@ -116,12 +116,12 @@ infusions = () # Ex: ('repeating shot', 'replicate magic item')
 
 # Backstory
 # Describe your backstory here
-personality_traits = """TODO"""
+personality_traits = """"""
 
-ideals = """TODO"""
+ideals = """"""
 
-bonds = """TODO"""
+bonds = """"""
 
-flaws = """TODO"""
+flaws = """"""
 
-features_and_traits = """TODO:"""
+features_and_traits = """"""
