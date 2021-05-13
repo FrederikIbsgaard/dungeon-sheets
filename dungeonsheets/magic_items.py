@@ -267,7 +267,7 @@ class ScryingEye(MagicItem):
     """This item allows a person to cast the scryring spell for up to 10 minutes.
     Once you have used the item, it can't be used again until the next dawn.
     """
-    requires_attunement = True
+    requires_attunement = False
     name = "Scrying Eye"
 
 class RagnarsStaffOfAcid(MagicItem):
