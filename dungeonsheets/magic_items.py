@@ -277,7 +277,7 @@ class RagnarsStaffOfAcid(MagicItem):
     "Melf's acid arrow " Can be casted at level 3 once per dawn.
     Melfs Acid Arrow:
     Make a ranged spell attack against the target. On a hit, the
-    target takes 4d4 acid damage immediately and 3d4 acid damage at the end of its
+    target takes 4d4 acid damage immediately and 4d4 acid damage at the end of its
     next turn. On a miss, the arrow splashes the target with acid for half as much
     of the initial damage and no damage at the end of its next turn. 
     Distance 90 feet.
