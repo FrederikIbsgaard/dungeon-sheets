@@ -4,6 +4,7 @@ import re
 import warnings
 import math
 from types import ModuleType
+from typing import Sequence, Union
 
 import jinja2
 
@@ -19,16 +20,10 @@ from dungeonsheets import (
     spells,
     weapons,
 )
-from dungeonsheets.stats import Ability, ArmorClass, Initiative, Skill, Speed, findattr
+from dungeonsheets.stats import findattr
 from dungeonsheets.weapons import Weapon
 from dungeonsheets.readers import read_character_file
-
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-__version__ = read("../VERSION").strip()
+from dungeonsheets.entity import Entity
 
 
 dice_re = re.compile(r"(\d+)d(\d+)")
@@ -144,57 +139,18 @@ def _resolve_mechanic(mechanic, module, SuperClass, warning_message=None):
     return Mechanic
 
 
-class Character:
+class Character(Entity):
     """A generic player character."""
 
-    # General attirubtes
-    name = ""
+    # Character-specific
     player_name = ""
-    alignment = "Neutral"
-    dungeonsheets_version = __version__
-    class_list = list()
-    _race = None
-    _background = None
     xp = 0
-    # Hit points
-    hp_max = None
-    # Base stats (ability scores)
-    strength = Ability()
-    dexterity = Ability()
-    constitution = Ability()
-    intelligence = Ability()
-    wisdom = Ability()
-    charisma = Ability()
-    armor_class = ArmorClass()
-    initiative = Initiative()
-    speed = Speed()
     inspiration = False
-    _saving_throw_proficiencies = tuple()  # use to overwrite class proficiencies
-    other_weapon_proficiencies = tuple()  # add to class/race proficiencies
-    skill_proficiencies = list()
-    skill_expertise = list()
-    languages = ""
-    # Skills
-    acrobatics = Skill(ability="dexterity")
-    animal_handling = Skill(ability="wisdom")
-    arcana = Skill(ability="intelligence")
-    athletics = Skill(ability="strength")
-    deception = Skill(ability="charisma")
-    history = Skill(ability="intelligence")
-    insight = Skill(ability="wisdom")
-    intimidation = Skill(ability="charisma")
-    investigation = Skill(ability="intelligence")
-    medicine = Skill(ability="wisdom")
-    nature = Skill(ability="intelligence")
-    perception = Skill(ability="wisdom")
-    performance = Skill(ability="charisma")
-    persuasion = Skill(ability="charisma")
-    religion = Skill(ability="intelligence")
-    sleight_of_hand = Skill(ability="dexterity")
-    stealth = Skill(ability="dexterity")
-    survival = Skill(ability="wisdom")
-    # Characteristics
     attacks_and_spellcasting = ""
+    class_list = list()
+    _background = None
+
+    # Characteristics
     personality_traits = (
         "TODO: Describe how your character behaves, interacts with others"
     )
@@ -202,34 +158,42 @@ class Character:
     bonds = "TODO: Describe your character's commitments or ongoing quests."
     flaws = "TODO: Describe your character's interesting flaws."
     features_and_traits = "Describe any other features and abilities."
-    # Inventory
-    cp = 0
-    sp = 0
-    ep = 0
-    gp = 0
-    pp = 0
-    equipment = ""
-    weapons = list()
-    magic_items = list()
-    armor = None
-    shield = None
-    _proficiencies_text = list()
-    # Magic
-    spellcasting_ability = None
-    _spells = list()
-    _spells_prepared = list()
-    infusions = list()
-    # Features IN MAJOR DEVELOPMENT
-    custom_features = list()
-    feature_choices = list()
 
-    def __init__(self, **attrs):
-        """Takes a bunch of attrs and passes them to ``set_attrs``"""
+    _proficiencies_text = list()
+
+    def __init__(
+        self,
+        classes: Sequence = [],
+        levels: Sequence[int] = [],
+        subclasses: Sequence = [],
+        **attrs,
+    ):
+        """Create a new character from attributes *attrs*.
+
+        **Multiclassing** can be accomplished by a list of class names
+        *classes*, and a list of class levels *levels*.
+
+        Parameters
+        ==========
+        classes
+          Strings with class names, or character class definitions
+          representing the characters various D&D classes.
+        levels
+          The class levels for each corresponding class entry in
+          *classes*.
+        subclasses
+          Subclasses that apply for this character.
+        **attrs
+          Additional keyword parameters to set as attributes for this
+          character.
+
+        """
+        super(Character, self).__init__()
         self.clear()
         # make sure class, race, background are set first
-        my_classes = attrs.pop("classes", [])
-        my_levels = attrs.pop("levels", [])
-        my_subclasses = attrs.pop("subclasses", [])
+        my_classes = classes
+        my_levels = levels
+        my_subclasses = subclasses
         # backwards compatability
         if len(my_classes) == 0:
             if "class" in attrs:
@@ -255,7 +219,7 @@ class Character:
         self.__set_max_hp(attrs.get("hp_max", None))
 
     def clear(self):
-        # reset class-definied items
+        # reset class-defined items
         self.class_list = list()
         self.weapons = list()
         self.magic_items = list()
@@ -281,8 +245,9 @@ class Character:
         cls: (classes.CharClass, type, str),
         level: (int, str),
         subclass=None,
-        feature_choices=[],
+        feature_choices: Sequence = [],
     ):
+        """Add a class, level, and subclass the character has attained."""
         if isinstance(cls, str):
             cls = cls.strip().title().replace(" ", "")
             try:
@@ -298,8 +263,18 @@ class Character:
         )
 
     def add_classes(
-        self, classes_list=[], levels=[], subclasses=[], feature_choices=[]
+        self,
+        classes_list: Sequence[Union[str, classes.CharClass]] = [],
+        levels: Sequence[Union[int, float, str]] = [],
+        subclasses: Sequence = [],
+        feature_choices: Sequence = [],
     ):
+        """Add several classes, levels, etc.
+
+        The lists can also be single values for a single class
+        character.
+
+        """
         if isinstance(classes_list, str):
             classes_list = [classes_list]
         if (
@@ -392,7 +367,7 @@ class Character:
 
     @property
     def subclasses(self):
-        return list([c.subclass or "" for c in self.class_list])
+        return [c.subclass for c in self.class_list if c.subclass is not None]
 
     @property
     def level(self):
@@ -587,7 +562,7 @@ class Character:
             spells |= set(c.spells_known) | set(c.spells_prepared)
         if self.race is not None:
             spells |= set(self.race.spells_known) | set(self.race.spells_prepared)
-        return sorted(tuple(spells), key=(lambda x: (x.name)))
+        return sorted(tuple(spells), key=(lambda x: x.name))
 
     @property
     def spells_prepared(self):
@@ -598,7 +573,7 @@ class Character:
             spells |= set(c.spells_prepared)
         if self.race is not None:
             spells |= set(self.race.spells_prepared)
-        return sorted(tuple(spells), key=(lambda x: (x.name)))
+        return sorted(tuple(spells), key=(lambda x: x.name))
 
     def set_attrs(self, **attrs):
         """
@@ -909,7 +884,7 @@ class Character:
             return ()
 
     @classmethod
-    def load(cls, character_file):
+    def load(Cls, character_file):
         # Create a character from the character definition
         char_props = read_character_file(character_file)
         classes = char_props.get("classes", [])
@@ -920,7 +895,7 @@ class Character:
             ]
             char_props["levels"] = [str(char_props.pop("level"))]
         # Create the character with loaded properties
-        char = Character(**char_props)
+        char = Cls(**char_props)
         return char
 
     def save(self, filename, template_file="character_template.txt"):
@@ -947,7 +922,7 @@ class Character:
         make_sheet(filename, character=self, flatten=kwargs.get("flatten", True))
 
 
-# Add backwards compatability for tests
+# Add backwards compatibility for tests
 class Artificer(Character):
     def __init__(self, level=1, **attrs):
         attrs["classes"] = ["Artificer"]

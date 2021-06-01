@@ -3,29 +3,23 @@ shape forms."""
 
 
 from dungeonsheets.stats import Ability
+from dungeonsheets.entity import Entity
 
 
-class Monster:
+class Monster(Entity):
     """A monster that may be encountered when adventuring."""
 
     name = "Generic Monster"
     description = ""
     challenge_rating = 0
-    armor_class = 0
     skills = "Perception +3, Stealth +4"
-    senses = ""
-    languages = ""
-    strength = Ability()
-    dexterity = Ability()
-    constitution = Ability()
-    intelligence = Ability()
-    wisdom = Ability()
-    charisma = Ability()
-    speed = 30
-    swim_speed = 0
+    swim_speed = 0  # TODO: Consider refactoring stats.Speed to consider all of these just like we do stats.Ability
     fly_speed = 0
     hp_max = 10
     hit_dice = "1d6"
+
+    def __init__(self):
+        super(Monster, self).__init__()
 
     @property
     def is_beast(self):
@@ -50,7 +44,7 @@ class Ankylosaurus(Monster):
     challenge_rating = 3
     armor_class = 15
     skills = ""
-    senses = "Passive perception 11"
+    senses = "passive Perception 11"
     strength = Ability(19)
     dexterity = Ability(11)
     constitution = Ability(15)
@@ -80,7 +74,7 @@ class Ape(Monster):
     challenge_rating = 1 / 2
     armor_class = 12
     skills = "Athletics +5, Perception +3"
-    senses = "Passive perception 13"
+    senses = "passive Perception 13"
     strength = Ability(16)
     dexterity = Ability(14)
     constitution = Ability(14)
@@ -115,7 +109,7 @@ class BlackBear(Monster):
     challenge_rating = 1 / 2
     armor_class = 11
     skills = "Perception +3"
-    senses = "Passive perception 13"
+    senses = "passive Perception 13"
     strength = Ability(15)
     dexterity = Ability(10)
     constitution = Ability(14)
@@ -132,10 +126,10 @@ class BlackBear(Monster):
 class Crocodile(Monster):
     """**Hold Breath:** The crocodile can hold its breath for 15 minutes.
 
-    **Bite:** *Melee Weapon Attack:* +4 to hit, reach 5 ft., one
-      creature. *Hit:* 7 (1d10+2) piercing damage, and the target is
-      Grappled (escape DC 12). Until this grapple ends, the target is
-      Restrained, and the crocodile can't bite another target.
+    **Bite.** *Melee Weapon Attack:* +4 to hit, reach 5 ft., one
+    creature. *Hit:* 7 (1d10+2) piercing damage, and the target is
+    Grappled (escape DC 12). Until this grapple ends, the target is
+    Restrained, and the crocodile can't bite another target.
 
     """
 
@@ -144,7 +138,7 @@ class Crocodile(Monster):
     challenge_rating = 1 / 2
     armor_class = 12
     skills = "Stealth +2"
-    senses = "Passive perception 10"
+    senses = "passive Perception 10"
     strength = Ability(15)
     dexterity = Ability(10)
     constitution = Ability(13)
@@ -165,16 +159,16 @@ class GiantEagle(Monster):
     the young as normal eagles).
 
     **Keen Sight:** The eagle has advantage on Wisdom (Perception)
-      checks that rely on sight.
+    checks that rely on sight.
 
     **Multiattack:** The eagle makes two attacks: one with its beak
-      and one with its talons.
+    and one with its talons.
 
     **Beak:** *Melee Weapon Attack:* +5 to hit, reach 5 ft., one
-      target. *Hit:* 6 (1d6 + 3) piercing damage.
+    target. *Hit:* 6 (1d6 + 3) piercing damage.
 
     **Talons:** *Melee Weapon Attack:* +5 to hit, reach 5 ft., one
-      target. *Hit:* 10 (2d6 + 3) slashing damage.
+    target. *Hit:* 10 (2d6 + 3) slashing damage.
 
     """
 
@@ -183,8 +177,8 @@ class GiantEagle(Monster):
     challenge_rating = 1
     armor_class = 13
     skills = "Perception +4"
-    senses = "Passive perception 14"
-    languages = "Giant Eagle, understands common and Auran but can't speak."
+    senses = "passive Perception 14"
+    languages = "understands common and Auran but can't speak."
     strength = Ability(16)
     dexterity = Ability(17)
     constitution = Ability(13)
@@ -209,8 +203,8 @@ class GiantFrog(Monster):
     description = "Medium beast, unaligned"
     challenge_rating = 1 / 4
     armor_class = 11
-    skills = "Pe rce ption +2, Stealth +3"
-    senses = "darkvi sion 30ft., passive Perception 12"
+    skills = "Perception +2, Stealth +3"
+    senses = "darkvision 30ft., passive Perception 12"
     languages = ""
     strength = Ability(12)
     dexterity = Ability(13)
@@ -242,7 +236,7 @@ class GiantRat(Monster):
     challenge_rating = 1 / 8
     armor_class = 12
     skills = ""
-    senses = "Darkvision 60 ft., Passive perception 10"
+    senses = "Darkvision 60 ft., passive Perception 10"
     languages = ""
     strength = Ability(7)
     dexterity = Ability(15)
@@ -287,9 +281,9 @@ class GiantPoisonousSnake(Monster):
 
 class PoisonousSnake(Monster):
     """**Bite:** Melee Weapon Attack: +5 to hit, reach 5 ft., one target.
-    Hit: 1 piercing damage, and the target must ma ke a DC 10
+    Hit: 1 piercing damage, and the target must make a DC 10
     Constitution saving throw, taking 5 (2d4) poison dam age on a
-    failed save, or ha lf as much damage on a successful one.
+    failed save, or half as much damage on a successful one.
     """
 
     name = "Poisonous snake"
@@ -486,7 +480,7 @@ class Wolf(Monster):
 
     **Pack Tactics.** The wolf has advantage on an attack roll against a
     creature if at least one of the wolf's allies is within 5 ft. of
-    the creature and the ally isn't incapacitated.  Actions
+    the creature and the ally isn't incapacitated.
 
     **Bite.** *Melee Weapon Attack:* +4 to hit, reach 5 ft., one
     target. *Hit:* (2d4+2) piercing damage. If the target is a
@@ -500,7 +494,7 @@ class Wolf(Monster):
     challenge_rating = 1 / 4
     armor_class = 13
     skills = "Perception +3, Stealth +4"
-    senses = "Passive Perception 13"
+    senses = "passive Perception 13"
     strength = Ability(12)
     dexterity = Ability(15)
     constitution = Ability(12)
