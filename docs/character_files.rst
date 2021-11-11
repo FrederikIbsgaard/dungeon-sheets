@@ -11,7 +11,8 @@
 
 Dungeonsheets expects one file per character, with a ``.py``
 extension. This file is a python module, most likely with a series of
-variables set describing the character. They are roughly grouped into
+variables set describing the character. Any attribute beginning with
+an underscore ('_') will be ignored. They are roughly grouped into
 sections, which are documented below. Additionally, some
 :ref:`examples<examples>` may be useful.
 
@@ -49,6 +50,20 @@ standard 5e rules, and are case-insensitive. Refer to the D&D
   alignment = "Chaotic good"
   xp = 2190
   hp_max = 16
+
+Character Portrait
+==================
+
+.. code:: python
+
+   portrait = True
+
+If this is set to True and a corresponding portrait file exists,
+the portrait will be added to the character personality sheet.
+For now, the file must have a .jpeg extension and be named exactly
+the same as the character file. This might not work with every Image size.
+ca 550 * 700px seems to be the right format. Anything smaller should work, too.
+See the Bard1 example for a demonstration of this feature.
 
 Ability Scores
 ==============
@@ -263,83 +278,6 @@ attribute of the character file:
 
     infusions = ["enhanced_arcane_focus", "repulsion_shield"]
 
-
-Homebrew
-========
-
-Dungeonsheets provides mechanisms for including items and abilities
-outside of the standard rules ("homebrew"). This can be done in one of
-two ways.
-
-1. As subclasses (recommended)
-2. As strings
-
-Subclasses (Recommended)
-------------------------
-
-The best option is to define your homebrew item directly in the
-character file as a subclass of one of the basic mechanics:
-
-- :py:class:`dungeonsheets.spells.Spell`
-- :py:class:`dungeonsheets.features.Feature`
-- :py:class:`dungeonsheets.infusions.Infusion`
-- :py:class:`dungeonsheets.weapons.Weapon`
-- :py:class:`dungeonsheets.armor.Armor`
-- :py:class:`dungeonsheets.armor.Shield`
-- :py:class:`dungeonsheets.magic_items.MagicItem`
-
-For convenience, these are all available in the
-:py:mod:`dungeonsheets.mechanics` module. With this approach, a
-homebrew weapon can be specified in the character file. See the
-relevant super class for relevant attributes.
-
-.. code:: python
-
-    from dungeonsheets import mechanics
-
-    class DullSword(mechanics.Weapon):
-	  """Bonk things with it."""
-          name = "Dullsword"
-	  base_damage = "10d6"
-
-    weapons = ['shortsword', DullSword]
-
-These homebrew definitions can also be stored in a separate file
-(e.g. *my_homebrew.py*), then imported and used in multiple character
-files:
-
-.. code:: python
-
-    import my_homebrew
-
-    weapons = ["shortsword", my_homebrew.DullSword]
-
-See the :ref:`homebrew example` example for more examples.
-
-Strings
--------
-
-If a mechanic is listed in a character file, but not built into
-dungeonsheets, it will still be listed on the character sheet with
-generic attributes. This should be viewed as a fallback to the
-recommended subclass method above, so that attributes and descriptions
-can be given.
-
-    
-Roll20 (VTTES) and Foundry JSON Files
-=====================================
-
-Dungeonsheets has partial support for reading JSON files exported
-either from roll20.net using the `VTTES browser extension`_, or
-directly from `Foundry VTT`_ by choosing *export data* from the
-actor's right-click menu. This allows character sheets to be exported
-from roll20.net and foundry, and then rendered into full character
-sheets.
-
 .. _player's handbook: http://dnd.wizards.com/products/tabletop-games/rpg-products/rpg_playershandbook
 
 .. _issue: https://github.com/canismarko/dungeon-sheets/issues
-
-.. _VTTES browser extension: https://wiki.5e.tools/index.php/R20es_Install_Guide
-
-.. _Foundry VTT: https://foundryvtt.com/article/actors/

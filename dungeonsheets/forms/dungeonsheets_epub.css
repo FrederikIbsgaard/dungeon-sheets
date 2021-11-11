@@ -1,0 +1,180 @@
+[% if use_dnd_decorations %]
+/* With fancy decorations */
+h1, h2, h3, h4, h5, h6 {
+    color: #58180d;
+    font-family: sans-serif;
+}
+body {
+    /* background: #f4ecdb; */
+    /* background-image: url("../images/paper.jpg"); */
+    background-size: 100%;
+}
+p {
+    text-align: justify;
+    text-justify: inter-word;
+}
+table {
+    /* background: #ECEEE3; */
+    border-spacing: 0px;
+    font-family: sans-serif;
+}
+tr:nth-child(even) {
+  background: #E0E5C1;
+}
+.stat-block {
+    background: #FDF1DC;
+    border-color: #E69A28;
+    border-width: 8px 0px;
+    border-style: solid;
+    margin: 16px 0px;
+    padding: 8px;
+    max-width: 35em;
+}
+.stat-block .details {
+    color: #58180d;
+}
+.stat-block p {
+    margin-right: 1em;
+}
+.stat-block h2 {
+    margin-bottom: 0px;
+}
+.stat-block .creature-description {
+    margin-top: 0px;
+}
+
+[% else %]
+/* Without Fancy decorations */
+th {
+  border-style: solid;
+  border-width: 0px;
+  border-bottom-width: 1px;
+}
+[% endif %]
+/* End fancy decorations */
+body {
+    margin: 1em;
+}
+p {
+    max-width: 35em;
+}
+/* Spell lists */
+dl.spell-slots {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+h3.spell-list-level {
+    margin-bottom: 0.5em;
+}
+ul.spell-list {
+  list-style-type: none;
+  padding-left: 1em;
+  margin: 0;
+}
+ul.spell-list li {
+    overflow: visible;
+    padding-left: 17px;
+    position: relative;
+}
+ul.spell-list li.prepared:before {
+    content: '\2713';
+    position: absolute;
+    left: 0;
+}
+ul.spell-list a {
+    /* Make spell list entries not look like links */
+    color: inherit;
+    text-decoration: inherit;
+}
+dl.monster-spell-list a {
+    /* Make spell list entries not look like links */
+    color: inherit;
+    text-decoration: inherit;
+}
+.creature-description {
+    font-style: italic;
+}
+
+/* Spell descriptions */
+.spell-school {
+    margin-top: 0px;
+    font-style: italic;
+}
+.spell-block h2 {
+    margin-block: 0px;
+}
+
+/* Dictionary lists for showing stats, etc */
+dl.details dt {
+    float: left;
+    clear: left;
+    text-align: right;
+    font-weight: bold;
+}
+dl.details dt::after {
+    content: ":";
+}
+dl.details dd {
+    padding: 0 0 0.5em 0;
+}
+[% for class, width in dl_widths.items() %]
+dl.[[ class ]] dt {
+    width: [[ width ]]em;
+}
+dl.[[ class ]] dd {
+    width: auto;
+    margin: 0 0 0 [[ width + 0.5 ]]em;
+}
+[% endfor %]
+
+/* For showing beasts */
+.known-beast-disabled {
+    opacity: 0.33;
+}
+
+/* Errors in rst conversion or missing content */
+.not-implemented {
+    font-weight: bold;
+    color: darkred;
+    background: pink;
+}
+div.system-message {
+  background: pink;
+  border-color: darkred;
+  border-style: solid;
+  border-width: 2px;
+  color: darkred;
+}
+
+/* General formatting */
+table {
+  margin-bottom: 10px;
+}
+
+table p {
+    margin: 0px;
+}
+
+th {
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: center;
+}
+
+td {
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: center;
+}
+
+dt {
+  font-weight: bold;
+}
+
+dd > p {
+  margin-top: 0px;
+}
+
+.literal {
+    font-family: monospace;
+}

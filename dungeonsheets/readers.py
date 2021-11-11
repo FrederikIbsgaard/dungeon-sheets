@@ -4,6 +4,7 @@ import json
 import re
 from functools import lru_cache
 import logging
+from typing import Union
 
 from pathlib import Path
 
@@ -12,20 +13,28 @@ from dungeonsheets import exceptions
 log = logging.getLogger(__file__)
 
 
-def read_character_file(filename: str):
+def read_sheet_file(filename: Union[str, Path]) -> dict:
     """Create a character object from the given definition file.
 
     The definition file should be an importable python file or a JSON
     file following one of the supported formats, filled with variables
     describing the character.
 
+    This function also resolves any *parent_sheets* attributes in the
+    given sheet, loading parent sheets and updating those attributes.
+
     Parameters
     ----------
     filename
       The path to the file that will be imported.
 
+    Returns
+    -------
+    char_props
+      Dictionary with the import character properties.
+
     """
-    filename = Path(filename)
+    filename = Path(filename).resolve()
     # Parse the file name
     ext = filename.suffix
     try:
@@ -33,8 +42,24 @@ def read_character_file(filename: str):
     except KeyError:
         raise ValueError(f"Character definition {filename} is not a known file type.")
     else:
-        new_char = reader()
-    return new_char
+        these_props = reader()
+    # Resolve parent_sheets
+    char_props = {}
+    parent_sheets = these_props.pop("parent_sheets", [])
+    for parent_sheet in parent_sheets:
+        parent_sheet = (filename.parent / parent_sheet).resolve()
+        if parent_sheet != filename:
+            parent_props = read_sheet_file(parent_sheet)
+            char_props.update(parent_props)
+    char_props.update(these_props)
+    # Remove imported dungeonsheets modules
+    char_props.pop("import_homebrew", None)
+    char_props.pop("mechanics", None)
+    # Remove private variables (start with a '_')
+    for attr in list(char_props.keys()):
+        if attr[0] == "_":
+            char_props.pop(attr)
+    return char_props
 
 
 class BaseCharacterReader:
@@ -259,7 +284,7 @@ class Roll20CharacterReader(JSONCharacterReader):
             match = prof_re.match(obj["name"])
             if match:
                 tool_profs.append(self.get_attrib(match.group(0)))
-        char_props["_proficiencies_text"] = tool_profs
+        char_props["proficiencies_text"] = tool_profs
         # Combat stats
         char_props["hp_max"] = self.as_int(self.get_attrib("hp", which="max"))
         # Equipment
@@ -296,6 +321,12 @@ class Roll20CharacterReader(JSONCharacterReader):
 
 
 class FoundryCharacterReader(JSONCharacterReader):
+    # List of weapons to ignore, only for class features that get added automatically
+    _invalid_weapons = [
+        "unarmed strike (monk)",
+        "<no name>",
+    ]
+
     def _skill_proficiency_value(self, key: str) -> float:
         proficiency_labels = {
             "acrobatics": "acr",
@@ -359,7 +390,11 @@ class FoundryCharacterReader(JSONCharacterReader):
         """Iterator over the weapons the character is carrying in her inventory."""
         items = self.json_data()["items"]
         for item in items:
-            if item["type"] == "weapon" and item["name"] != "<no name>":
+            is_valid_weapon = (
+                item["type"] == "weapon"
+                and item["name"].lower() not in self._invalid_weapons
+            )
+            if is_valid_weapon:
                 yield item["name"].lower()
 
     def armor(self):
@@ -495,11 +530,9 @@ class FoundryCharacterReader(JSONCharacterReader):
         tool_profs = [tool_labels[prof] for prof in tool_profs]
         custom_tool_profs = json_data["data"]["traits"]["toolProf"]["custom"]
         tool_profs.extend([s.strip() for s in custom_tool_profs.split(";")])
-        char_props["_proficiencies_text"] = tool_profs
+        char_props["proficiencies_text"] = tool_profs
         # Combat stats
-        char_props["hp_max"] = self.as_int(
-            json_data["data"]["attributes"]["hp"]["value"]
-        )
+        char_props["hp_max"] = self.as_int(json_data["data"]["attributes"]["hp"]["max"])
         # Equipment
         currency = json_data["data"]["currency"]
         char_props["cp"] = currency["cp"]

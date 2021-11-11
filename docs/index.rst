@@ -11,6 +11,8 @@ Welcome to Dungeonsheets's documentation!
    :caption: Contents:
 
    character_files
+   gm_notes
+   advanced_features
    examples
 
 Indices and tables

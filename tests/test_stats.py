@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from dungeonsheets import stats, character
+from dungeonsheets import stats, character, magic_items
 
 
 class TestStats(TestCase):
@@ -18,6 +18,9 @@ class TestStats(TestCase):
 
         my_class = MyClass()
         self.assertEqual(my_class.strength.saving_throw, 4)
+        # Try it with a magic item
+        my_class.magic_items.append(magic_items.RingOfProtection())
+        self.assertEqual(my_class.strength.saving_throw, 5)
 
     def test_modifier(self):
         class MyCharacter(character.Character):
@@ -72,26 +75,19 @@ class TestStats(TestCase):
         class MyClass(character.Character):
             dexterity = stats.Ability(14)
             acrobatics = stats.Skill(ability="dexterity")
+            sleight_of_hand = stats.Skill(ability="dexterity")
             skill_proficiencies = []
             proficiency_bonus = 2
 
         my_class = MyClass()
-        self.assertEqual(my_class.acrobatics, 2)
+        self.assertEqual(str(my_class.acrobatics), "Acrobatics")
+        self.assertEqual(my_class.acrobatics.modifier, 2)
+        self.assertEqual(str(my_class.sleight_of_hand), "Sleight Of Hand")
         # Check for a proficiency
         my_class.skill_proficiencies = ["acrobatics"]
-        self.assertEqual(my_class.acrobatics, 4)
-
-    def test_findattr(self):
-        """Check if the function can find attributes."""
-
-        class TestClass:
-            my_attr = 47
-            YourAttr = 53
-
-        test_class = TestClass()
-        # Direct access
-        self.assertEqual(stats.findattr(test_class, "my_attr"), test_class.my_attr)
-        self.assertEqual(stats.findattr(test_class, "YourAttr"), test_class.YourAttr)
-        # Swapping spaces for capitalization
-        self.assertEqual(stats.findattr(test_class, "my attr"), test_class.my_attr)
-        self.assertEqual(stats.findattr(test_class, "your attr"), test_class.YourAttr)
+        self.assertTrue(my_class.acrobatics.is_proficient)
+        self.assertEqual(my_class.acrobatics.proficiency_modifier, 2)
+        self.assertEqual(my_class.acrobatics.modifier, 4)
+        # Check for a proficiency with spaces in the name
+        my_class.skill_proficiencies = ["sleight_of_hand"]
+        self.assertEqual(my_class.sleight_of_hand.modifier, 4)

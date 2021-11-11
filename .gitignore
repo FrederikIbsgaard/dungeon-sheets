@@ -3,6 +3,10 @@ examples/*.pdf
 examples/*.aux
 examples/*.tex
 [Cc]harators/*.pdf
+
+# Generated epub files
+examples/*.epub
+
 # Emacs temp files
 *~
 

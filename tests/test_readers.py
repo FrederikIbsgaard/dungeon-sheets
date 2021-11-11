@@ -2,28 +2,71 @@ import warnings
 from pathlib import Path
 import unittest
 import types
+from contextlib import contextmanager
 
-from dungeonsheets.readers import read_character_file
+from dungeonsheets import exceptions
+from dungeonsheets.readers import read_sheet_file
 
 EG_DIR = (Path(__file__).parent.parent / "examples").resolve()
 CHAR_PYTHON_FILE = EG_DIR / "rogue1.py"
+GM_PYTHON_FILE = EG_DIR / "gm-session-notes.py"
 ROLL20_JSON_FILE = EG_DIR / "barbarian3.json"
 FOUNDRY_JSON_FILE = EG_DIR / "bard3_foundry.json"
 SPELLCASTER_JSON_FILE = EG_DIR / "artificer2.json"
 
 
 class PythonReaderTests(unittest.TestCase):
-    def test_load_python_file(self):
+    @contextmanager
+    def inherited_sheets(self):
+        """Create some cascading sheets to be inherited."""
+        child = Path("child_sheet.py")
+        parent = Path("parent_sheet.py")
+        # Write inheritance files
+        with open(parent, mode="w") as fp:
+            fp.writelines("\n".join([
+                "dungeonsheets_version = '0.15.0'",
+                "background = 'entertainer'",
+            ]) + "\n")
+        with open(child, mode="w") as fp:
+            fp.writelines("\n".join([
+                "dungeonsheets_version = '0.15.0'",
+                "name = 'Douglass Adams'",
+                f"parent_sheets = ['{str(parent)}']",
+            ]) + "\n")
+        # Drop back into the calling code
+        yield child, parent
+        # Remove temporary files
+        child.unlink()
+        parent.unlink()
+
+    def test_cascading_sheets(self):
+        with self.inherited_sheets() as (child, parent):
+            char_props = read_sheet_file(child)
+        self.assertEqual(char_props["name"], "Douglass Adams")
+        self.assertEqual(char_props["background"], "entertainer")
+    
+    def test_load_python_gm_sheet(self):
+        gmfile = GM_PYTHON_FILE
+        result = read_sheet_file(gmfile)
+        self.assertEqual(result["sheet_type"], "gm")
+    
+    def test_load_python_character(self):
         charfile = CHAR_PYTHON_FILE
-        result = read_character_file(charfile)
+        result = read_sheet_file(charfile)
         self.assertEqual(result["strength"], 10)
+
+    def test_load_bad_file(self):
+        """This file is not a valid character, so should fail."""
+        this_file = __file__
+        with self.assertRaises(exceptions.CharacterFileFormatError):
+            read_sheet_file(this_file)
 
 
 class Roll20ReaderTests(unittest.TestCase):
     def test_load_json_file(self):
         charfile = ROLL20_JSON_FILE
         with warnings.catch_warnings(record=True):
-            result = read_character_file(charfile)
+            result = read_sheet_file(charfile)
         expected_data = dict(
             name="Ulthar Jenkins",
             classes=["Barbarian"],
@@ -50,7 +93,7 @@ class Roll20ReaderTests(unittest.TestCase):
                 "warhammer",
                 "unarmed strike",
             ],
-            _proficiencies_text=[
+            proficiencies_text=[
                 "Brewer's Supplies",
             ],
             languages="common, dwarvish",
@@ -88,7 +131,7 @@ class Roll20ReaderTests(unittest.TestCase):
     def test_load_json_spells(self):
         charfile = SPELLCASTER_JSON_FILE
         with warnings.catch_warnings(record=True):
-            result = read_character_file(charfile)
+            result = read_sheet_file(charfile)
         expected_data = dict(
             spells_prepared=[
                 "cure wounds",
@@ -127,7 +170,7 @@ class FoundryReaderTests(unittest.TestCase):
     def test_load_json_file(self):
         charfile = FOUNDRY_JSON_FILE
         with warnings.catch_warnings(record=True):
-            result = read_character_file(charfile)
+            result = read_sheet_file(charfile)
         expected_data = dict(
             name="Sam Lloyd",
             classes=["Bard"],
@@ -161,7 +204,7 @@ class FoundryReaderTests(unittest.TestCase):
                 "crossbow",
                 "knives",
             ],
-            _proficiencies_text=[
+            proficiencies_text=[
                 "artisan's tools",
                 "disguise kit",
                 "forger's kit",
@@ -207,7 +250,7 @@ class FoundryReaderTests(unittest.TestCase):
     def test_load_json_spells(self):
         charfile = SPELLCASTER_JSON_FILE
         with warnings.catch_warnings(record=True):
-            result = read_character_file(charfile)
+            result = read_sheet_file(charfile)
         expected_data = dict(
             spells_prepared=[
                 "cure wounds",

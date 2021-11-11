@@ -4,7 +4,7 @@ import re
 import warnings
 import math
 from types import ModuleType
-from typing import Sequence, Union
+from typing import Sequence, Union, MutableMapping
 
 import jinja2
 
@@ -12,6 +12,7 @@ from dungeonsheets import (
     armor,
     background,
     classes,
+    exceptions,
     features,
     infusions,
     magic_items,
@@ -20,10 +21,10 @@ from dungeonsheets import (
     spells,
     weapons,
 )
-from dungeonsheets.stats import findattr
+from dungeonsheets.content_registry import find_content
 from dungeonsheets.weapons import Weapon
-from dungeonsheets.readers import read_character_file
-from dungeonsheets.entity import Entity
+from dungeonsheets.content import Creature
+from dungeonsheets.dice import combine_dice
 
 
 dice_re = re.compile(r"(\d+)d(\d+)")
@@ -70,81 +71,17 @@ multiclass_spellslots_by_level = {
 }
 
 
-def _resolve_mechanic(mechanic, module, SuperClass, warning_message=None):
-    """Take a raw entry in a character sheet and turn it into a usable object.
-
-    Eg: spells can be defined in many ways. This function accepts all
-    of those options and returns an actual *Spell* class that can be
-    used by a character::
-
-        >>> from dungeonsheets import spells
-        >>> _resolve_mechanic("mage_hand", spells, None)
-        >>> class MySpell(spells.Spell): pass
-        >>> _resolve_mechanic(MySpell, None, spells.Spell)
-        >>> _resolve_mechanic("hocus pocus", spells, None)
-
-    The acceptable entries for *mechanic*, in priority order, are:
-      1. A subclass of *SuperClass*
-      2. A string with the name of a defined spell in *module*
-      3. The name of an unknown spell (creates generic object using *factory*)
-
-    Parameters
-    ==========
-    mechanic : str, type
-      The thing to be resolved, either a string with the name of the
-      mechanic, or a subclass of *ParentClass* describing the
-      mechanic.
-    module : module
-      A python module in which to look for the defined string in *name*.
-    SuperClass : type
-      Class to determine whether *mechanic* should just be allowed
-      through as is.
-    error_message : str, optional
-      A string whose ``str.format()`` method (receiving one positional
-      argument *mechanic*) will be used for displaying a warning when an
-      unknown mechanic is resolved. If omitted, no warning will be
-      displayed.
-
-    Returns
-    =======
-    Mechanic
-      A class representing the resolved game mechanic. This will
-      likely be a subclass of *SuperClass* if the other parameters are
-      well behaved, but this is not enforced.
-
-    """
-    is_already_resolved = isinstance(mechanic, type) and issubclass(
-        mechanic, SuperClass
-    )
-    if is_already_resolved:
-        Mechanic = mechanic
-    else:
-        try:
-            # Retrieve pre-defined mechanic
-            Mechanic = findattr(module, mechanic)
-        except AttributeError:
-            # No pre-defined mechanic available
-            if warning_message is not None:
-                # Emit the warning
-                msg = warning_message.format(mechanic)
-                warnings.warn(msg)
-            else:
-                # Create a generic message so we can make a docstring later.
-                msg = f'Mechanic "{mechanic}" not defined. Please add it.'
-            # Create generic mechanic from the factory
-            class_name = "".join([s.title() for s in mechanic.split("_")])
-            mechanic_name = mechanic.replace("_", " ").title()
-            attrs = {"name": mechanic_name, "__doc__": msg, "source": "Unknown"}
-            Mechanic = type(class_name, (SuperClass,), attrs)
-    return Mechanic
-
-
-class Character(Entity):
+class Character(Creature):
     """A generic player character."""
-
     # Character-specific
+    name = "Unknown Hero"
     player_name = ""
     xp = 0
+    # Extra hit points info, for characters only
+    hp_current = None
+    hp_temp = 0
+    hit_dice_current = ""
+    # Base stats (ability scores)
     inspiration = False
     attacks_and_spellcasting = ""
     class_list = list()
@@ -158,8 +95,27 @@ class Character(Entity):
     bonds = "TODO: Describe your character's commitments or ongoing quests."
     flaws = "TODO: Describe your character's interesting flaws."
     features_and_traits = "Describe any other features and abilities."
+    chosen_tools = ""
 
     _proficiencies_text = list()
+
+    # Appearance
+    portrait = False
+    age = 0
+    height = ""
+    weight = ""
+    eyes = ""
+    skin = ""
+    hair = ""
+    # Background
+    allies = ""
+    faction_name = ""
+    # faction_symbol = placeholder not sure how to implement
+    backstory = ""
+    additional_description = ""
+    other_feats_traits = ""
+    treasure = ""
+    org_name = ""
 
     def __init__(
         self,
@@ -221,7 +177,7 @@ class Character(Entity):
     def clear(self):
         # reset class-defined items
         self.class_list = list()
-        self.weapons = list()
+        self._weapons = list()
         self.magic_items = list()
         self._saving_throw_proficiencies = tuple()
         self.other_weapon_proficiencies = tuple()
@@ -317,8 +273,10 @@ class Character(Entity):
             self._race = newrace(owner=self)
         elif isinstance(newrace, str):
             try:
-                self._race = findattr(race, newrace)(owner=self)
-            except AttributeError:
+                self._race = find_content(newrace, valid_classes=[race.Race])(
+                    owner=self
+                )
+            except exceptions.ContentNotFound:
                 msg = f'Race "{newrace}" not defined. Please add it to ``race.py``'
                 self._race = race.Race(owner=self)
                 warnings.warn(msg)
@@ -338,8 +296,10 @@ class Character(Entity):
             self._background = bg(owner=self)
         elif isinstance(bg, str):
             try:
-                self._background = findattr(background, bg)(owner=self)
-            except AttributeError:
+                self._background = find_content(
+                    bg, valid_classes=[background.Background]
+                )(owner=self)
+            except exceptions.ContentNotFound:
                 msg = (
                     f'Background "{bg}" not defined. Please add it to ``background.py``'
                 )
@@ -597,9 +557,8 @@ class Character(Entity):
                         f'Magic Item "{mitem}" not defined. '
                         "Please add it to ``magic_items.py``"
                     )
-                    ThisMagicItem = _resolve_mechanic(
+                    ThisMagicItem = self._resolve_mechanic(
                         mechanic=mitem,
-                        module=magic_items,
                         SuperClass=magic_items.MagicItem,
                         warning_message=msg,
                     )
@@ -608,7 +567,12 @@ class Character(Entity):
                 self.other_weapon_proficiencies = ()
                 msg = 'Magic Item "{}" not defined. Please add it to ``weapons.py``'
                 wps = set(
-                    [_resolve_mechanic(w, weapons, weapons.Weapon, msg) for w in val]
+                    [
+                        self._resolve_mechanic(
+                            w, SuperClass=weapons.Weapon, warning_message=msg
+                        )
+                        for w in val
+                    ]
                 )
                 wps -= set(self.weapon_proficiencies)
                 self.other_weapon_proficiencies = list(wps)
@@ -625,9 +589,8 @@ class Character(Entity):
                 _features = []
                 for f in val:
                     msg = 'Feature "{}" not defined. Please add it to ``features.py``'
-                    ThisFeature = _resolve_mechanic(
+                    ThisFeature = self._resolve_mechanic(
                         mechanic=f,
-                        module=features,
                         SuperClass=features.Feature,
                         warning_message=msg,
                     )
@@ -638,9 +601,8 @@ class Character(Entity):
                 _spells = []
                 for spell_name in val:
                     msg = 'Spell "{}" not defined. Please add it to ``spells.py``'
-                    ThisSpell = _resolve_mechanic(
+                    ThisSpell = self._resolve_mechanic(
                         mechanic=spell_name,
-                        module=spells,
                         SuperClass=spells.Spell,
                         warning_message=msg,
                     )
@@ -662,9 +624,8 @@ class Character(Entity):
                             "Infusion '{}' not defined. Please add it to"
                             " ``infusions.py``"
                         )
-                        ThisInfusion = _resolve_mechanic(
+                        ThisInfusion = self._resolve_mechanic(
                             mechanic=infusion_name,
-                            module=infusions,
                             SuperClass=infusions.Infusion,
                             warning_message=msg,
                         )
@@ -735,6 +696,14 @@ class Character(Entity):
         final_text += "."
         return final_text
 
+    @proficiencies_text.setter
+    def proficiencies_text(self, val):
+        try:
+            profs = val.split(",")
+        except AttributeError:
+            profs = val
+        self._proficiencies_text = profs
+
     @property
     def features_text(self):
         s = "\n\n--".join(
@@ -744,14 +713,128 @@ class Character(Entity):
             s = "(See Features Page)\n\n--" + s
             s += "\n\n=================\n\n"
         return s
+    
+    @property
+    def features_summary(self):
+        # save space for informed features and traits
+        if hasattr(self, "features_and_traits"):
+            info_list = ["**Other Features**"]
+            info_list += [text.strip() for text in self.features_and_traits.split("\n")
+                     if not(text.isspace())]
+            N = len(info_list)
+            for text in info_list:
+                if len(text) > 26: # 26 is just a guess for expected size of lines
+                    N += 1
+            if N > 30:
+                return "\n".join(info_list[:30]) + "\n(...)"
+            N = 30 - N
+        else:
+            info_list = []
+            N = 30
+        if len(self.class_list) > 1:
+            featS = ["**Multiclass**:"]
+            for cl in self.class_list:
+                description = cl.name
+                if cl.subclass:
+                    description += f"/{cl.subclass}"
+                description += f" {cl.level}"
+                featS.append(description)
+        else:
+            featS = []
+        featS += ["**Features**"]
+        featS += [f.name for f in self.features]
+        if len(featS) > N:
+            featS = featS[:N] + ["(...)"]
+        featS += info_list
+        return "\n\n".join(featS)
+    
+    @property
+    def equipment_text(self):
+        eq_list = []
+        if hasattr(self, "magic_items"):
+            eq_list += ["**Magic Items**"]
+            eq_list += [item.name for item in self.magic_items]
+        if hasattr(self, "equipment"):
+            eq_list += ["**Other Equipment**"]
+            eq_list += [text.strip() for text in self.equipment.split("\n")
+                     if not(text.isspace())]
+        return "\n\n".join(eq_list)
+    
+    @property
+    def proficiencies_by_type(self):
+        prof_dict = {}
+        w_pro = set(self.weapon_proficiencies)
+        if weapons.MartialWeapon in w_pro:
+            prof_dict["Weapons"] = ["All weapons"]
+        elif weapons.SimpleWeapon in w_pro:
+            prof_dict["Weapons"] = ["Simple weapons"]
+            for w in w_pro:
+                if not(issubclass(w, weapons.SimpleWeapon)):
+                    prof_dict["Weapons"] += [w.name]
+        else:
+            prof_dict["Weapons"] = [w.name for w in w_pro]
+        if "Weapons" in prof_dict.keys():
+            prof_dict["Weapons"] = ", ".join(prof_dict["Weapons"]) + "."
+        armor_types = ["all armor", "light armor", "medium armor", 
+                       "heavy armor"]
+        prof_set = set([prof.lower().strip().strip('.') 
+                     for prof in self.proficiencies_text.split(',')])
+        prof_dict["Armor"] = [ar for ar in armor_types if ar in prof_set]
+        if len(prof_dict["Armor"]) > 2 or 'all armor' in prof_set:
+            prof_dict["Armor"] = ["All armor"]
+        if 'shields' in prof_set:
+            prof_dict["Armor"] += ["shields"]
+        prof_dict["Armor"] = ", ".join(prof_dict["Armor"]) + "."
+        if hasattr(self, 'chosen_tools'):
+            prof_dict["Other"] = self.chosen_tools
+        return prof_dict
+    
+    @property
+    def spell_casting_info(self):
+        """Returns a ready-to-use dictionary for spellsheets."""
+        level_names = ["Cantrip", 
+                       'FirstLevelSpell',
+                       'SecondLevelSpell',
+                       'ThirdLevelSpell',
+                       'FourthLevelSpell',
+                       'FifthLevelSpell',
+                       'SixthLevelSpell',
+                       'SeventhLevelSpell',
+                       'EighthLevelSpell',
+                       'NinthLevelSpell']
+        spell_info = {'head':{
+        "classes_and_levels": " / ".join(
+        [c.name + " " + str(c.level) for c in self.spellcasting_classes]
+        ),
+        "abilities": " / ".join(
+            [c.spellcasting_ability.upper()[:3] 
+             for c in self.spellcasting_classes]
+            ),
+        "DCs": " / ".join(
+            [str(self.spell_save_dc(c)) 
+             for c in self.spellcasting_classes]
+            ),
+        "bonuses": " / ".join(
+            ["{:+d}".format(self.spell_attack_bonus(c)) 
+             for c in self.spellcasting_classes]
+            ),
+        }}
+        slots = {level_names[k]:self.spell_slots(k) for k in range(1, 10)
+                 if self.spell_slots(k) > 0}
+        spell_info["slots"] = slots
+        spell_list = {}
+        for s in self.spells:
+            prepared = s in self.spells_prepared
+            level_info = level_names[s.level]
+            info_there = spell_list.get(level_info, [])
+            spell_list[level_info] = info_there + [(s.name, prepared)]
+        spell_info["list"] = spell_list
+        return spell_info
 
     @property
     def magic_items_text(self):
         s = ", ".join(
-            [
-                f.name + ("**" if f.needs_implementation else "")
-                for f in sorted(self.magic_items, key=(lambda x: x.name))
-            ]
+            [f.name for f in sorted(self.magic_items, key=(lambda x: x.name))]
         )
         if s:
             s += ", "
@@ -772,9 +855,8 @@ class Character(Entity):
                 new_armor = new_armor
             else:
                 msg = 'Unnown armor "{}". Please add it to ``armor.py``.'
-                NewArmor = _resolve_mechanic(
+                NewArmor = self._resolve_mechanic(
                     mechanic=new_armor,
-                    module=armor,
                     SuperClass=armor.Armor,
                     warning_message=msg,
                 )
@@ -792,11 +874,8 @@ class Character(Entity):
 
         """
         if shield not in ("", "None", None):
-            try:
-                NewShield = findattr(armor, shield)
-            except AttributeError:
-                # Not a string, so just treat it as Armor
-                NewShield = shield
+            msg = 'Unknown shield "{}". Please ad it to ``shields.py``.'
+            NewShield = self._resolve_mechanic(shield, SuperClass=armor.Shield, warning_message=msg)
             self.shield = NewShield()
 
     def wield_weapon(self, weapon):
@@ -809,25 +888,31 @@ class Character(Entity):
 
         """
         # Retrieve the weapon class from the weapons module
-        if isinstance(weapon, weapons.Weapon):
-            ThisWeapon = type(weapon)
-        else:
-            msg = 'Unknown weapon "{}". Please add it to ``weapons.py``.'
-            ThisWeapon = _resolve_mechanic(
-                mechanic=weapon,
-                module=weapons,
-                SuperClass=weapons.Weapon,
-                warning_message=msg,
-            )
+        msg = 'Unknown weapon "{}". Please add it to ``weapons.py``.'
+        ThisWeapon = self._resolve_mechanic(
+            mechanic=weapon,
+            SuperClass=weapons.Weapon,
+            warning_message=msg,
+        )
         # Save it to the array
-        self.weapons.append(ThisWeapon(wielder=self))
+        self._weapons.append(ThisWeapon(wielder=self))
 
+    @property
+    def weapons(self):
+        my_weapons = self._weapons.copy()
+        # Account for unarmed strike
+        if len(my_weapons) == 0 or hasattr(self, "Monk"):
+            my_weapons.append(weapons.Unarmed(wielder=self))
+        return my_weapons
+    
     @property
     def hit_dice(self):
         """What type and how many dice to use for re-gaining hit points.
-
+        
         To change, set hit_dice_num and hit_dice_faces."""
-        return " + ".join([f"{c.level}d{c.hit_dice_faces}" for c in self.class_list])
+        dice_s = " + ".join([f"{c.level}d{c.hit_dice_faces}" for c in self.class_list])
+        dice_s = combine_dice(dice_s)
+        return dice_s
 
     @property
     def hit_dice_faces(self):
@@ -884,9 +969,25 @@ class Character(Entity):
             return ()
 
     @classmethod
-    def load(Cls, character_file):
-        # Create a character from the character definition
-        char_props = read_character_file(character_file)
+    def load(Cls, char_props: MutableMapping):
+        """Factory Creates a character from the character definition.
+
+        Parameters
+        ==========
+        char_props
+          Keys and values holding all the attributes of the
+          character. E.g. ``char_props['strength'] = 16``
+
+        Returns
+        =======
+        char
+          The initialized ``Character`` object with associated
+          parameters.
+
+        """
+        # Parse the sheet type
+        char_props.pop("sheet_type", "")
+        # Load classes
         classes = char_props.get("classes", [])
         # backwards compatability
         if (len(classes) == 0) and ("character_class" in char_props):

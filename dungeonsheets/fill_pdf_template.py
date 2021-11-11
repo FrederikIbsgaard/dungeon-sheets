@@ -2,11 +2,13 @@ import os
 import subprocess
 import logging
 import warnings
+import io
 
 import pdfrw
 from fdfgen import forge_fdf
+from reportlab.pdfgen import canvas
 
-from dungeonsheets.stats import mod_str
+from dungeonsheets.forms import mod_str
 
 CHECKBOX_ON = "Yes"
 CHECKBOX_OFF = "Off"
@@ -39,7 +41,7 @@ def create_character_pdf_template(character, basename, flatten=False):
         "Race ": str(character.race),
         "Alignment": character.alignment,
         "XP": str(character.xp),
-        "Inspiration": str("Yes" if character.inspiration else "No"),
+        "Inspiration": str("Yes" if character.inspiration else ""),
         # Abilities
         "ProfBonus": mod_str(character.proficiency_bonus),
         "STRmod": str(character.strength.value),
@@ -57,7 +59,7 @@ def create_character_pdf_template(character, basename, flatten=False):
         "AC": str(character.armor_class),
         "Initiative": str(character.initiative),
         "Speed": str(character.speed),
-        "Passive": 10 + character.perception,
+        "Passive": character.passive_wisdom,
         # Saving throws (proficiencies handled later)
         "ST Strength": mod_str(character.strength.saving_throw),
         "ST Dexterity": mod_str(character.dexterity.saving_throw),
@@ -66,27 +68,31 @@ def create_character_pdf_template(character, basename, flatten=False):
         "ST Wisdom": mod_str(character.wisdom.saving_throw),
         "ST Charisma": mod_str(character.charisma.saving_throw),
         # Skills (proficiencies handled below)
-        "Acrobatics": mod_str(character.acrobatics),
-        "Animal": mod_str(character.animal_handling),
-        "Arcana": mod_str(character.arcana),
-        "Athletics": mod_str(character.athletics),
-        "Deception ": mod_str(character.deception),
-        "History ": mod_str(character.history),
-        "Insight": mod_str(character.insight),
-        "Intimidation": mod_str(character.intimidation),
-        "Investigation ": mod_str(character.investigation),
-        "Medicine": mod_str(character.medicine),
-        "Nature": mod_str(character.nature),
-        "Perception ": mod_str(character.perception),
-        "Performance": mod_str(character.performance),
-        "Persuasion": mod_str(character.persuasion),
-        "Religion": mod_str(character.religion),
-        "SleightofHand": mod_str(character.sleight_of_hand),
-        "Stealth ": mod_str(character.stealth),
-        "Survival": mod_str(character.survival),
+        "Acrobatics": mod_str(character.acrobatics.modifier),
+        "Animal": mod_str(character.animal_handling.modifier),
+        "Arcana": mod_str(character.arcana.modifier),
+        "Athletics": mod_str(character.athletics.modifier),
+        "Deception ": mod_str(character.deception.modifier),
+        "History ": mod_str(character.history.modifier),
+        "Insight": mod_str(character.insight.modifier),
+        "Intimidation": mod_str(character.intimidation.modifier),
+        "Investigation ": mod_str(character.investigation.modifier),
+        "Medicine": mod_str(character.medicine.modifier),
+        "Nature": mod_str(character.nature.modifier),
+        "Perception ": mod_str(character.perception.modifier),
+        "Performance": mod_str(character.performance.modifier),
+        "Persuasion": mod_str(character.persuasion.modifier),
+        "Religion": mod_str(character.religion.modifier),
+        "SleightofHand": mod_str(character.sleight_of_hand.modifier),
+        "Stealth ": mod_str(character.stealth.modifier),
+        "Survival": mod_str(character.survival.modifier),
         # Hit points
         "HDTotal": character.hit_dice,
         "HPMax": str(character.hp_max),
+        "HPCurrent": str(character.hp_current)
+        if character.hp_current is not None
+        else "",
+        "HPTemp": str(character.hp_temp) if character.hp_temp > 0 else "",
         # Personality traits and other features
         "PersonalityTraits ": text_box(character.personality_traits),
         "Ideals": text_box(character.ideals),
@@ -146,15 +152,17 @@ def create_character_pdf_template(character, basename, flatten=False):
         ("Wpn Name 2", "Wpn2 AtkBonus ", "Wpn2 Damage "),
         ("Wpn Name 3", "Wpn3 AtkBonus  ", "Wpn3 Damage "),
     ]
-    if len(character.weapons) == 0:
-        character.wield_weapon("unarmed")
     for _fields, weapon in zip(weapon_fields, character.weapons):
         name_field, atk_field, dmg_field = _fields
         fields[name_field] = weapon.name
         fields[atk_field] = "{:+d}".format(weapon.attack_modifier)
         fields[dmg_field] = f"{weapon.damage}/{weapon.damage_type}"
+    # Additional attacks beyond 3
+    attack = [
+        f"{w.name}: Atk {w.attack_modifier:+d}, Dam {w.damage}/{w.damage_type}"
+        for w in character.weapons[len(weapon_fields) :]
+    ]
     # Other attack information
-    attack = []
     if character.armor:
         attack.append(f"Armor: {character.armor}")
     if character.shield:
@@ -169,7 +177,31 @@ def create_character_pdf_template(character, basename, flatten=False):
     # Prepare the actual PDF
     dirname = os.path.join(os.path.dirname(os.path.abspath(__file__)), "forms/")
     src_pdf = os.path.join(dirname, "blank-character-sheet-default.pdf")
-    return make_pdf(fields, src_pdf=src_pdf, basename=basename, flatten=flatten)
+    return make_pdf(fields, src_pdf=src_pdf, basename=basename, flatten=flatten, portrait="")
+
+
+def create_personality_pdf_template(character, basename, portrait_file="", flatten=False):
+    # Prepare the list of fields
+    fields = {
+        "CharacterName 2": character.name,
+        "Age": str(character.age),
+        "Height": character.height,
+        "Weight": character.weight,
+        "Eyes": character.eyes,
+        "Skin": character.skin,
+        "Hair": character.hair,
+        # "CHARACTER IMAGE": None
+        # "Faction Symbol Image": None
+        "Allies": text_box(character.allies),
+        "FactionName": character.faction_name,
+        "Backstory": text_box(character.backstory),
+        "Feat+Traits": text_box(character.other_feats_traits),
+        "Treasure": text_box(character.treasure),
+    }
+    # Prepare the actual PDF
+    dirname = os.path.join(os.path.dirname(os.path.abspath(__file__)), "forms/")
+    src_pdf = os.path.join(dirname, "blank-personality-sheet-default.pdf")
+    return make_pdf(fields, src_pdf=src_pdf, basename=basename, flatten=flatten, portrait=portrait_file)
 
 
 def create_spells_pdf_template(character, basename, flatten=False):
@@ -430,9 +462,19 @@ def create_spells_pdf_template(character, basename, flatten=False):
             3083,
         ),
     }
+    # Prepare the lists of spells for each level
     for level in field_numbers.keys():
-        spells = tuple(spl for spl in character.spells if spl.level == level)
-        field_names = tuple(f"Spells {i}" for i in field_numbers[level])
+        spells = [spl for spl in character.spells if spl.level == level]
+        # Determine if we should omit un-prepared spells to save space
+        if len(spells) > len(field_numbers[level]):
+            spells = [s for s in spells if s in character.spells_prepared]
+            warnings.warn(
+                f"{character.name} knows more spells than the number of "
+                "lines available in spell sheet. Limited to prepared "
+                "spells only."
+            )
+        # Build the list of PDF controls to set/toggle
+        field_names = [f"Spells {i}" for i in field_numbers[level]]
         prep_names = tuple(f"Check Box {i}" for i in prep_numbers[level])
         for spell, field, chk_field in zip(spells, field_names, prep_names):
             fields[field] = str(spell)
@@ -444,10 +486,10 @@ def create_spells_pdf_template(character, basename, flatten=False):
     # Make the actual pdf
     dirname = os.path.join(os.path.dirname(os.path.abspath(__file__)), "forms/")
     src_pdf = os.path.join(dirname, "blank-spell-sheet-default.pdf")
-    make_pdf(fields, src_pdf=src_pdf, basename=basename, flatten=flatten)
+    make_pdf(fields, src_pdf=src_pdf, basename=basename, flatten=flatten, portrait="")
 
 
-def make_pdf(fields: dict, src_pdf: str, basename: str, flatten: bool = False):
+def make_pdf(fields: dict, src_pdf: str, basename: str, flatten: bool = False, portrait = ""):
     """Create a new PDF by applying fields to a src PDF document.
 
     Parameters
@@ -466,17 +508,17 @@ def make_pdf(fields: dict, src_pdf: str, basename: str, flatten: bool = False):
 
     """
     try:
-        _make_pdf_pdftk(fields, src_pdf, basename, flatten)
+        _make_pdf_pdftk(fields, src_pdf, basename, flatten, portrait)
     except FileNotFoundError:
         # pdftk could not run, so alert the user and use pdfrw
         warnings.warn(
             f"Could not run `{PDFTK_CMD}`, using fallback; forcing `--editable`.",
             RuntimeWarning,
         )
-        _make_pdf_pdfrw(fields, src_pdf, basename, flatten)
+        _make_pdf_pdfrw(fields, src_pdf, basename, flatten, portrait)
 
 
-def _make_pdf_pdfrw(fields: dict, src_pdf: str, basename: str, flatten: bool = False):
+def _make_pdf_pdfrw(fields: dict, src_pdf: str, basename: str, flatten: bool = False, portrait = ""):
     """Backup make_pdf function in case pdftk is not available."""
     template = pdfrw.PdfReader(src_pdf)
     # Different types of PDF fields
@@ -535,7 +577,7 @@ def _make_pdf_pdfrw(fields: dict, src_pdf: str, basename: str, flatten: bool = F
     pdfrw.PdfWriter().write(f"{basename}.pdf", template)
 
 
-def _make_pdf_pdftk(fields, src_pdf, basename, flatten=False):
+def _make_pdf_pdftk(fields, src_pdf, basename, flatten=False, portrait=""):
     """More robust way to make a PDF, but has a hard dependency."""
     # Create the actual FDF file
     fdfname = basename + ".fdf"
@@ -545,7 +587,12 @@ def _make_pdf_pdftk(fields, src_pdf, basename, flatten=False):
     fdf_file.write(fdf)
     fdf_file.close()
     # Build the final flattened PDF documents
-    dest_pdf = basename + ".pdf"
+    if portrait != "":
+        dest_pdf = basename + "-temp.pdf"
+        image_pdf = basename + "_image_tmp.pdf"
+        make_image_pdf(portrait, image_pdf)
+    else:
+        dest_pdf = basename + ".pdf"
     popenargs = [
         PDFTK_CMD,
         src_pdf,
@@ -557,5 +604,37 @@ def _make_pdf_pdftk(fields, src_pdf, basename, flatten=False):
     if flatten:
         popenargs.append("flatten")
     subprocess.call(popenargs)
+    # stamp with image
+    if portrait != "":
+        src_pdf = dest_pdf
+        stamped_pdf = basename + ".pdf"
+        popenargs = [
+            PDFTK_CMD,
+            src_pdf,
+            "stamp",
+            image_pdf,
+            "output",
+            stamped_pdf,
+        ]
+        popenargs.append("flatten")
+        subprocess.call(popenargs)
+        # Clean up
+        os.remove(image_pdf)
+        os.remove(dest_pdf)
     # Clean up temporary files
     os.remove(fdfname)
+
+def make_image_pdf(src_img:str, dest_pdf:str):
+    packet = io.BytesIO()
+    can = canvas.Canvas(packet)
+    x_start = 10
+    y_start = 240
+    can.drawImage(src_img, x_start, y_start, width=175, preserveAspectRatio=True, mask='auto')
+    can.showPage()
+    can.save()
+ 
+    #move to the beginning of the StringIO buffer
+    packet.seek(0)
+ 
+    new_pdf = pdfrw.PdfReader(packet)
+    pdfrw.PdfWriter().write(dest_pdf, new_pdf)

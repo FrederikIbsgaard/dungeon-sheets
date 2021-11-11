@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from dungeonsheets import exceptions, features, monsters, weapons
 from dungeonsheets.classes.classes import CharClass, SubClass
-from dungeonsheets.stats import findattr
+from dungeonsheets.content_registry import find_content
 
 
 # PHB
@@ -272,9 +272,9 @@ class Druid(CharClass):
             else:
                 # Not already a monster so see if we can find one
                 try:
-                    NewMonster = findattr(monsters, shape)
+                    NewMonster = find_content(shape, valid_classes=[monsters.Monster])
                     new_shape = NewMonster()
-                except AttributeError:
+                except exceptions.ContentNotFound:
                     msg = (
                         f"Wild shape '{shape}' not found. Please add it to"
                         " ``monsters.py``"
@@ -329,6 +329,8 @@ class Druid(CharClass):
         valid_swim = max_swim is None or shape.swim_speed <= max_swim
         valid_fly = max_fly is None or shape.fly_speed <= max_fly
         can_assume = shape.is_beast and valid_cr and valid_swim and valid_fly
+        if shape.name == "Spider":
+            assert can_assume
         return can_assume
 
     @property
