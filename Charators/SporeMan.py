@@ -10,32 +10,32 @@ sheet by running ``makesheets`` from the command line.
 
 dungeonsheets_version = "0.17.1"
 
-name = "Jörmun Ragnar"
+name = "SporeMan"
 player_name = "Frederik"
 
 # Be sure to list Primary class first
-classes = ['Sorceror']  # ex: ['Wizard'] or ['Rogue', 'Fighter']
-levels = [11]  # ex: [10] or [3, 2]
-subclasses = ["Draconic Bloodline"]  # ex: ['Necromacy'] or ['Thief', None]
-background = "Acolyte"
-race = "Half-Orc"
-alignment = "Neutral good"
+classes = ['Druid']  # ex: ['Wizard'] or ['Rogue', 'Fighter']
+levels = [1]  # ex: [10] or [3, 2]
+subclasses = ["Circle of Spores"]  # ex: ['Necromacy'] or ['Thief', None]
+background = "Outlander"
+race = "Hill Dwarf"
+alignment = "Chaotic Neutral"
 
 xp = 0
-hp_max = 69
-inspiration = 0  # boolean inspiration value
+hp_max = 0
+inspiration = 0  # interger inspiration value
 
 # Ability Scores
-strength = 11
-dexterity = 16
-constitution = 12
-intelligence = 12
-wisdom = 11
-charisma = 18
+strength = 0
+dexterity = 0
+constitution = 0
+intelligence = 0
+wisdom = 0
+charisma = 0
 
 # Select what skills you're proficient with
 # ex: skill_proficiencies = ('athletics', 'acrobatics', 'arcana')
-skill_proficiencies = ('arcana', 'persuasion', 'insight', 'religion', 'intimidation')
+skill_proficiencies = ()
 
 # Any skills you have "expertise" (Bard/Rogue) in
 skill_expertise = ()
@@ -46,7 +46,7 @@ skill_expertise = ()
 # Gunslinger, etc.)
 # Example:
 # features = ('Tavern Brawler',) # take the optional Feat from PHB
-features = ('Empowered Spell', 'Subtle Spell', 'Transmuted Spell')
+features = ()
 
 # If selecting among multiple feature options: ex Fighting Style
 # Example (Fighting Style):
@@ -58,7 +58,7 @@ weapon_proficiencies = ()  # ex: ('shortsword', 'quarterstaff')
 _proficiencies_text = ()  # ex: ("thieves' tools",)
 
 # Proficiencies and languages
-languages = """Deep Speech, Under Common, Common, Orc, Draconic"""
+languages = """Common, Dwarvish"""
 
 # Inventory
 # TODO: Get yourself some money
@@ -69,11 +69,9 @@ gp = 0
 pp = 0
 
 # TODO: Put your equipped weapons and armor here
-weapons = ['Quarterstaff', "Dagger", "Dart"]  # Example: ('shortsword', 'longsword')
-magic_items = ('Ring of Saving Throws', 
-                'Scrying Eye',
-                'Ragnars Staff of Acid',)  # Example: ('ring of protection',)
-armor = "None"  # Eg "leather armor"
+weapons = []  # Example: ('shortsword', 'longsword')
+magic_items = ()  # Example: ('ring of protection',)
+armor = "leather armor"  # Eg "leather armor"
 shield = "None"  # Eg "shield"
 
 equipment = """Handy Haversack"""
@@ -82,33 +80,16 @@ attacks_and_spellcasting = """"""
 
 # List of known spells
 # Example: spells_prepared = ('magic missile', 'mage armor')
-spells_prepared = ( 'Acid Splash',
-                    'Dancing Lights',
-                    'Mage Hand',
-                    'Mending',
-                    'Message',
-                    'Minor Illusion',
-                    'Chromatic Orb',
-                    'Detect Magic',
-                    'Ice Knife',
-                    'Magic Missile',
-                    'Detect Thoughts',
-                    'Misty Step',
-                    'Scorching Ray',
-                    'Counterspell',
-                    'Dimension Door',
-                    'Vitriolic Sphere', 
-                    'Dominate Person',
-                    'Globe of Invulnerability')  # Todo: Learn some spells
+spells_prepared = ()  # Todo: Learn some spells
 
 # Which spells have not been prepared
-__spells_unprepared = ('Scrying', 'Melfs Acid Arrow')
+__spells_unprepared = ()
 
 # all spells known
 spells = spells_prepared + __spells_unprepared
 
 # Wild shapes for Druid
-wild_shapes = ()  # Ex: ('ape', 'wolf', 'ankylosaurus')
+wild_shapes = ["crocodile", "giant eagle", 'ape']  # Ex: ('ape', 'wolf', 'ankylosaurus')
 
 # Infusions for Artificer
 infusions = () # Ex: ('repeating shot', 'replicate magic item')
@@ -124,12 +105,3 @@ bonds = """"""
 flaws = """"""
 
 features_and_traits = """"""
-
-# Appearance
-portrait = True
-age = 20
-height = ""
-weight = ""
-eyes = "Green Hint of Purple"
-skin = "Gray"
-hair = "Black"
