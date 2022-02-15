@@ -15,14 +15,14 @@ player_name = "Frederik"
 
 # Be sure to list Primary class first
 classes = ['Sorceror']  # ex: ['Wizard'] or ['Rogue', 'Fighter']
-levels = [11]  # ex: [10] or [3, 2]
+levels = [12]  # ex: [10] or [3, 2]
 subclasses = ["Draconic Bloodline"]  # ex: ['Necromacy'] or ['Thief', None]
 background = "Acolyte"
 race = "Half-Orc"
 alignment = "Neutral good"
 
 xp = 0
-hp_max = 69
+hp_max = 76
 inspiration = 0  # boolean inspiration value
 
 # Ability Scores
@@ -46,7 +46,7 @@ skill_expertise = ()
 # Gunslinger, etc.)
 # Example:
 # features = ('Tavern Brawler',) # take the optional Feat from PHB
-features = ('Empowered Spell', 'Subtle Spell', 'Transmuted Spell')
+features = ('Meta Magic Adept', 'Empowered Spell', 'Subtle Spell', 'Transmuted Spell', 'Heightened Spell', 'Twinned Spell')
 
 # If selecting among multiple feature options: ex Fighting Style
 # Example (Fighting Style):
@@ -82,27 +82,10 @@ attacks_and_spellcasting = """"""
 
 # List of known spells
 # Example: spells_prepared = ('magic missile', 'mage armor')
-spells_prepared = ( 'Acid Splash',
-                    'Dancing Lights',
-                    'Mage Hand',
-                    'Mending',
-                    'Message',
-                    'Minor Illusion',
-                    'Chromatic Orb',
-                    'Detect Magic',
-                    'Ice Knife',
-                    'Magic Missile',
-                    'Detect Thoughts',
-                    'Misty Step',
-                    'Scorching Ray',
-                    'Counterspell',
-                    'Dimension Door',
-                    'Vitriolic Sphere', 
-                    'Dominate Person',
-                    'Globe of Invulnerability')  # Todo: Learn some spells
+spells_prepared = ()  # Todo: Learn some spells
 
 # Which spells have not been prepared
-__spells_unprepared = ('Scrying', 'Melfs Acid Arrow')
+__spells_unprepared = ()
 
 # all spells known
 spells = spells_prepared + __spells_unprepared
