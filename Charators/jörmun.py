@@ -15,14 +15,14 @@ player_name = "Frederik"
 
 # Be sure to list Primary class first
 classes = ['Sorceror']  # ex: ['Wizard'] or ['Rogue', 'Fighter']
-levels = [12]  # ex: [10] or [3, 2]
+levels = [13]  # ex: [10] or [3, 2]
 subclasses = ["Draconic Bloodline"]  # ex: ['Necromacy'] or ['Thief', None]
 background = "Acolyte"
 race = "Half-Orc"
 alignment = "Neutral good"
 
 xp = 0
-hp_max = 76
+hp_max = 84
 inspiration = 0  # boolean inspiration value
 
 # Ability Scores
