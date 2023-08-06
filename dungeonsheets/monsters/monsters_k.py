@@ -8,8 +8,6 @@ from dungeonsheets.monsters.monsters import Monster
 from dungeonsheets.stats import Ability
 
 
-<<<<<<< HEAD
-=======
 class Kenku(Monster):
     """Ambusher.
       In the first round of a combat, the kenku has advantage on
@@ -56,7 +54,6 @@ class Kenku(Monster):
     spells = []
 
 
->>>>>>> origin/master
 class KillerWhale(Monster):
     """
 
@@ -295,8 +292,6 @@ class Kraken(Monster):
     damage_resistances = ''
     damage_vulnerabilities = ''
     spells = []
-<<<<<<< HEAD
-=======
 
 
 class KuoToa(Monster):
@@ -522,4 +517,3 @@ class KuoToaWhip(Monster):
     challenge_rating = 1
     spells = ["sacred flame", "thaumaturgy",
               "bane", "shield of faith", ]
->>>>>>> origin/master

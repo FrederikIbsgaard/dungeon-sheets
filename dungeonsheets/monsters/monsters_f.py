@@ -105,8 +105,6 @@ class FireGiant(Monster):
     spells = []
 
 
-<<<<<<< HEAD
-=======
 class FireSnake(Monster):
     """**Heated Body.** A creature that touches the snake or hits it with
     a melee attack while within 5 feet of it takes 3 (1d6) fire
@@ -154,7 +152,6 @@ class FireSnake(Monster):
 
     
 
->>>>>>> origin/master
 class FleshGolem(Monster):
     """
 

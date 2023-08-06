@@ -9,13 +9,7 @@ from dungeonsheets.stats import Ability
 
 
 class Aboleth(Monster):
-<<<<<<< HEAD
-    """
-
-    Amphibious.
-=======
     """Amphibious.
->>>>>>> origin/master
       The aboleth can breathe air and water.
     Mucous Cloud.
       While underwater, the aboleth is surrounded by transformative mucus. A
@@ -70,8 +64,6 @@ class Aboleth(Monster):
     Psychic Drain (Costs 2 Actions).
       One creature charmed by the aboleth takes 10 (3d6) psychic damage, and
       the aboleth regains hit points equal to the damage the creature takes.
-<<<<<<< HEAD
-=======
 
     # Lair Actions
 
@@ -99,7 +91,6 @@ class Aboleth(Monster):
     up; it can’t use either of the last two lair actions twice in a
     row.
 
->>>>>>> origin/master
     """
     name = 'Aboleth'
     description = 'Large aberration, lawful evil'

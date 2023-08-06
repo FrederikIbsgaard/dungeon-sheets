@@ -102,15 +102,9 @@ class MeatShield(mechanics.Shield, mechanics.MagicItem):
 
 
 weapons = (DullSword, "rusty_shiv", _campaign.BrightSword)  # Example: ('shortsword', 'longsword')
-<<<<<<< HEAD
-magic_items = (RobeOfBreadSummoning, "staff_of_the_arbor_abode")
-armor = PlasticArmor # Eg "leather armor"
-shield = LegoShield # Eg "shield"
-=======
 magic_items = (RobeOfBreadSummoning, "staff_of_the_arbor_abode", DullSword, MeatShield, PlotArmor)
 armor = PlotArmor # Eg "leather armor"
 shield = MeatShield # Eg "shield"
->>>>>>> origin/master
 
 equipment = """TODO: list the equipment and magic items your character carries"""
 

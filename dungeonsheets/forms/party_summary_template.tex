@@ -24,30 +24,18 @@
       \\
     [% endfor %]    
   \end{DndTable}
-<<<<<<< HEAD
-  \begin{DndTable}{r c c c c}
-    & AC & Pas.\ Per. & Max HP & Spl.\ DC \\
-    [% for member in party %]
-      [[ member.name[:28] ]]
-      & [[ member.armor_class ]]
-      & [[ member.perception.modifier + 10 ]]
-      & [[ member.max_hp ]]
-=======
   \begin{DndTable}{r c c c}
     & AC & Max HP & Spl.\ DC \\
     [% for member in party %]
       [[ member.name[:28] ]]
       & [[ member.armor_class ]]
       & [[ member.hp_max ]]
->>>>>>> origin/master
       & [% for class in member.class_list %]
           [% if class.spellcasting_ability %] [[ member.spell_save_dc(class) ]], [% endif %]
         [% endfor %]
       \\
     [% endfor %]
   \end{DndTable}
-<<<<<<< HEAD
-=======
   % Passive stats
   \begin{DndTable}{r c c c}
     & Pas. Per.\ & Pas. Ins.\ & Pas. Inv.\ \\
@@ -59,7 +47,6 @@
       \\
     [% endfor %]
   \end{DndTable}
->>>>>>> origin/master
   %% XP thresholds for the party
   \begin{DndTable}{r c c c c}
     & Easy & Medium & Hard & Deadly \\
@@ -83,31 +70,20 @@
       \\
     [% endfor %]
   \end{tabular}
-<<<<<<< HEAD
-  \begin{tabular}{r | c c c}
-    & AC & Pas.\ Per. & Spl.\ DC \\
-=======
   % Additional combat stats
   \begin{tabular}{r | c c c}
     & AC & Max HP & Spl.\ DC \\
->>>>>>> origin/master
     \hline\hline
     [% for member in party %]
       [[ member.name[:28] ]]
       & [[ member.armor_class ]]
-<<<<<<< HEAD
-      & [[ member.perception.modifier + 10 ]]
-=======
       & [[ member.hp_max ]] % Maximum HP
->>>>>>> origin/master
       & [% for class in member.class_list %]
           [% if class.spellcasting_ability %] [[ member.spell_save_dc(class) ]], [% endif %]
         [% endfor %]
       \\
     [% endfor %]
   \end{tabular}
-<<<<<<< HEAD
-=======
   % Passive stats
   \begin{tabular}{r | c c c}
     & Pas.\ Per. & Pas.\ Ins. & Pas.\ Inv.\ \\
@@ -120,7 +96,6 @@
       \\
     [% endfor %]
   \end{tabular}  
->>>>>>> origin/master
     %% XP thresholds for the party
   \begin{tabular}{r c c c c}
     & Easy & Medium & Hard & Deadly \\

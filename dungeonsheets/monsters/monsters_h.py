@@ -354,9 +354,6 @@ class Hippogriff(Monster):
     spells = []
 
 
-<<<<<<< HEAD
-class Hobgoblin(Monster):
-=======
 class HobgoblinCaptain(Monster):
     """Martial Advantage.
       Once per turn, the hobgoblin can deal an extra 10 (3d6) damage
@@ -412,7 +409,6 @@ class HobgoblinCaptain(Monster):
 
 class Hobgoblin(Monster):
 
->>>>>>> origin/master
     """
 
     Martial Advantage.

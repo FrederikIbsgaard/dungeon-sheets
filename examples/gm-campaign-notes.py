@@ -5,11 +5,7 @@ monsters, etc.
 
 """
 
-<<<<<<< HEAD
-from dungeonsheets import mechanics, monsters
-=======
 from dungeonsheets import mechanics, monsters as _monsters
->>>>>>> origin/master
 
 dungeonsheets_version = "0.14.0"
 
@@ -22,10 +18,6 @@ haryk_omanie = mechanics.Character(
     name="Haryk Omanie",
 )
 
-<<<<<<< HEAD
-party = ["rogue1.py", "paladin2.py", haryk_omanie, monsters.Veteran]
-=======
 party = ["rogue1.py", "paladin2.py", haryk_omanie, _monsters.Veteran]
->>>>>>> origin/master
 
 random_tables = ["conjure animals"]

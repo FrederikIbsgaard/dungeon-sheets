@@ -143,8 +143,6 @@ class PhaseSpider(Monster):
     spells = []
 
 
-<<<<<<< HEAD
-=======
 class Piercer(Monster):
     """**False Appearance.** While the piercer remains motionless on
     the ceiling, it is indistinguishable from a normal stalactite.
@@ -177,7 +175,6 @@ class Piercer(Monster):
     challenge_rating = 1 / 2
 
 
->>>>>>> origin/master
 class PitFiend(Monster):
     """
 

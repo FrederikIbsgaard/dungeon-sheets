@@ -1820,8 +1820,6 @@ class WilloWisp(Monster):
     spells = []
 
 
-<<<<<<< HEAD
-=======
 class WingedKobold(Monster):
     """Sunlight Sensitivity.
       While in sunlight, the kobold has disadvantage on attack rolls,
@@ -1868,7 +1866,6 @@ class WingedKobold(Monster):
     spells = []
 
 
->>>>>>> origin/master
 class WinterWolf(Monster):
     """
 

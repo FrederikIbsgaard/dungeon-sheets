@@ -2,8 +2,6 @@
 \section*{Monsters}
 
 [% if use_dnd_decorations %]
-<<<<<<< HEAD
-=======
   \begin{DndTable}{r c c c c}
    Name & HP & Hit Dice & AC & Init. \\
    [% for monster in monsters|sort(attribute='name') %]
@@ -11,7 +9,6 @@
    [% endfor %]
   \end{DndTable}
 
->>>>>>> origin/master
   [% for monster in monsters|sort(attribute='name') %]
     \pdfbookmark[1]{[[ monster.name ]]}{Monsters - [[ monster.name ]]}
     \begin{DndMonster}{[[ monster.name ]]}
@@ -50,8 +47,6 @@
   [% endfor %]
   
 [% else %]
-<<<<<<< HEAD
-=======
    \begin{tabular}{r | c c c c}
       Name & HP & Hit Dice & AC & Init. \\
       \hline\hline
@@ -60,7 +55,6 @@
      [% endfor %]
    \end{tabular}
 
->>>>>>> origin/master
   [% for monster in monsters|sort(attribute='name') %]
     {
     \pdfbookmark[1]{[[ monster.name ]]}{Monsters - [[ monster.name ]]}
