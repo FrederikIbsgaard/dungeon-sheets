@@ -226,7 +226,7 @@ class FoundryReaderTests(unittest.TestCase):
             gp=162,
             pp=2,
             weapons=["rapier"],
-            magic_items=(),
+            # magic_items=(),
             armor="padded armor",
             shield="shield",
             personality_traits="Loves a good lawyer joke.",
@@ -239,6 +239,7 @@ class FoundryReaderTests(unittest.TestCase):
             attacks_and_spellcasting="",
             spells_prepared=["Bane", "Faerie Fire", "Thunderwave", "Detect Thoughts"],
             spells=["Vicious Mockery", "Message", "Prestidigitation", "Bane", "Faerie Fire", "Thunderwave", "Healing Word", "Blindness/Deafness", "Detect Thoughts", "Hold Person", "Fear", "Heat Metal"],
+            features=["jack of all trades", "song of rest", "bard college", "expertise (bard)",  "font of inspiration", "bardic inspiration", "lucky", "jack of all trades", "countercharm"],
         )
         for key, val in expected_data.items():
             this_result = result[key]
@@ -284,3 +285,14 @@ class FoundryReaderTests(unittest.TestCase):
                 this_result = list(this_result)
             self.assertEqual(this_result, val, key)
             
+    def test_load_homebrew_weapon(self):
+        """Check that the properties of a homebrew magic weapon get read
+        properly.
+
+        """
+        charfile = FOUNDRY_JSON_FILE
+        with warnings.catch_warnings(record=True):
+            result = read_sheet_file(charfile)
+        # Check that some magic items were set
+        self.assertGreater(len(result['magic_items']), 0,
+                           "No magic items imported")

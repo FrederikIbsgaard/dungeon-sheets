@@ -5,6 +5,17 @@ default_content_registry.add_module(__name__)
 
 
 class Weapon:
+    """A weapon that be used to deal damage.
+
+    Attributes
+    ==========
+
+    Parameters
+    ==========
+    wielder
+      The character (or NPC) that is using the weapon.
+    
+    """
     name = ""
     cost = "0 gp"
     base_damage = "1d4"
@@ -374,7 +385,7 @@ class Shortsword(MartialWeapon, MeleeWeapon):
     cost = "10 gp"
     base_damage = "1d6"
     damage_type = "p"
-    weight = 0
+    weight = 2
     properties = "Finesse, light"
     is_finesse = True
     ability = "strength"

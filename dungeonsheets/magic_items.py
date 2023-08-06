@@ -61,8 +61,8 @@ class MagicItem:
     st_bonus_wisdom: Optional[int] = None
     st_bonus_charisma: Optional[int] = None
 
-    def __init__(self, owner=None):
-        self.owner = owner
+    def __init__(self, wielder=None):
+        self.wielder = wielder
 
     def __str__(self):
         return self.name
@@ -87,6 +87,109 @@ class CloakOfProtection(MagicItem):
     st_bonus_all = 1
     requires_attunement = True
     rarity = "Uncommon"
+
+
+class DeckOfIllusions(MagicItem):
+    """This box contains a set of Parchment cards. A full deck has 34
+    cards. A deck found as Treasure is usually missing 1d20 - 1 cards.
+
+    The magic of the deck functions only if cards are drawn at random
+    (you can use an altered deck of playing cards to simulate the
+    deck). You can use an action to draw a card at random from the
+    deck and throw it to the ground at a point within 30 feet of you.
+
+    An Illusion of one or more Creatures forms over the Thrown card
+    and remains until dispelled. An illusory creature appears real, of
+    the appropriate size, and behaves as if it were a real creature
+    (as presented in the Monster Manual), except that it can do no
+    harm. While you are within 120 feet of the illusory creature and
+    can see it, you can use an action to move it magically anywhere
+    within 30 feet of its card. Any physical interaction with the
+    illusory creature reveals it to be an Illusion, because Objects
+    pass through it. Someone who uses an action to visually inspect
+    the creature identifies it as illusory with a successful DC 15
+    Intelligence (Investigation) check. The creature then appears
+    translucent.
+
+    The Illusion lasts until its card is moved or the Illusion is
+    dispelled. When the Illusion ends, the image on its card
+    disappears, and that card can't be used again.
+    
+    +-------------------+----------------------------------+
+    | Playing Card      | Illusion                         |
+    +===================+==================================+
+    | Ace of hearts     | Red Dragon                       |
+    +-------------------+----------------------------------+
+    | King of hearts    | Knight and four guards           |
+    +-------------------+----------------------------------+
+    | Queen of hearts   | Succubus or Incubus              |
+    +-------------------+----------------------------------+
+    | Jack of hearts    | Druid                            |
+    +-------------------+----------------------------------+
+    | Ten of hearts     | Cloud Giant                      |
+    +-------------------+----------------------------------+
+    | Nine of hearts    | Ettin                            |
+    +-------------------+----------------------------------+
+    | Eight of hearts   | Bugbear                          |
+    +-------------------+----------------------------------+
+    | Two of hearts     | Goblin                           |
+    +-------------------+----------------------------------+
+    | Ace of diamonds   | Beholder                         |
+    +-------------------+----------------------------------+
+    | King of diamonds  | Archmage and mage Apprentice     |
+    +-------------------+----------------------------------+
+    | Queen of diamonds | Night Hag                        |
+    +-------------------+----------------------------------+
+    | Jack of diamonds  | Assassin                         |
+    +-------------------+----------------------------------+
+    | Ten of diamonds   | Fire giant                       |
+    +-------------------+----------------------------------+
+    | Nine of diamonds  | Ogre mage                        |
+    +-------------------+----------------------------------+
+    | Eight of diamonds | Gnoll                            |
+    +-------------------+----------------------------------+
+    | Two of diamonds   | Kobold                           |
+    +-------------------+----------------------------------+
+    | Ace of spades     | Lich                             |
+    +-------------------+----------------------------------+
+    | King of spades    | Priest and two acolytes          |
+    +-------------------+----------------------------------+
+    | Queen of spades   | Medusa                           |
+    +-------------------+----------------------------------+
+    | Jack of spades    | Veteran                          |
+    +-------------------+----------------------------------+
+    | Ten of spades     | Frost Giant                      |
+    +-------------------+----------------------------------+
+    | Nine of spades    | Troll                            |
+    +-------------------+----------------------------------+
+    | Eight of spades   | Hobgoblin                        |
+    +-------------------+----------------------------------+
+    | Two of spades     | Goblin                           |
+    +-------------------+----------------------------------+
+    | Ace of clubs      | Iron Golem                       |
+    +-------------------+----------------------------------+
+    | King of clubs     | Bandit Captain and three bandits |
+    +-------------------+----------------------------------+
+    | Queen of clubs    | Erinyes                          |
+    +-------------------+----------------------------------+
+    | Jack of clubs     | Berserker                        |
+    +-------------------+----------------------------------+
+    | Ten of clubs      | Hill giant                       |
+    +-------------------+----------------------------------+
+    | Nine of clubs     | Ogre                             |
+    +-------------------+----------------------------------+
+    | Eight of clubs    | Orc                              |
+    +-------------------+----------------------------------+
+    | Two of clubs      | Kobold                           |
+    +-------------------+----------------------------------+
+    | Jokers (2)        | You (the deck's owner)           |
+    +-------------------+----------------------------------+
+    
+    """
+    name = "Deck of Illusions"
+    requires_attunement = False
+    rarity = "Uncommon"
+    item_type = "Adventuring gear (wondrous item)"
 
 
 class RingOfProtection(MagicItem):
@@ -326,7 +429,17 @@ class ShieldOfFaces(MagicItem):
     name = "Shield of Faces"
 
 
+class GlovesOfThievery(MagicItem):
+    """These gloves are invisible while worn. While wearing them, you gain
+    a +5 bonus to Dexterity (Sleight of Hand) checks and Dexterity
+    checks made to pick locks."""
+    name = "Gloves of Thievery"
+    rarity = "Uncommon"
+    item_type = "Wondrous item"
+
+
 class GlowingSword(MagicItem):
+
     """
     This strange longsword glows at odd times.
     """
@@ -469,3 +582,38 @@ class PotionOfSupremeHealing(PotionOfHealing):
     """
     name = "Potion of Supreme Healing"
     rarity = "very rare"
+
+
+class PotionOfResistance(MagicItem):
+    """When you drink this potion, you gain resistance to one type of
+    damage for 1 hour. The DM chooses the type or determines it
+    randomly from the options below.
+    
+    +-----+-------------+
+    | d10 | Damage Type |
+    +=====+=============+
+    | 1   | Acid        |
+    +-----+-------------+
+    | 2   | Cold        |
+    +-----+-------------+
+    | 3   | Fire        |
+    +-----+-------------+
+    | 4   | Force       |
+    +-----+-------------+
+    | 5   | Lightning   |
+    +-----+-------------+
+    | 6   | Necrotic    |
+    +-----+-------------+
+    | 7   | Poison      |
+    +-----+-------------+
+    | 8   | Psychic     |
+    +-----+-------------+
+    | 9   | Radiant     |
+    +-----+-------------+
+    | 10  | Thunder     |
+    +-----+-------------+
+    
+    """
+    name = "Potion of Resistance"
+    rarity = "uncommon"
+    item_type = "Potion"

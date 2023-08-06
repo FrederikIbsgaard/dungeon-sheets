@@ -5,6 +5,7 @@ import warnings
 from abc import ABC
 from pathlib import Path
 
+from dungeonsheets import exceptions
 from dungeonsheets.stats import Ability, ArmorClass, Initiative, Speed, Skill
 from dungeonsheets.content_registry import find_content
 
@@ -84,7 +85,7 @@ class Content(ABC):
             Mechanic = mechanic
         elif SuperClass is not None and isinstance(mechanic, SuperClass):
             # Has been instantiated for some reason
-            Mechanic = type(Mechanic)
+            Mechanic = type(mechanic)
         else:
             try:
                 # Retrieve pre-defined mechanic
@@ -100,12 +101,17 @@ class Content(ABC):
                     # Create a generic message so we can make a docstring later.
                     msg = f'Mechanic "{mechanic}" not defined. Please add it.'
                 # Create generic mechanic from the factory
-                class_name = "".join([s.title() for s in mechanic.split("_")])
+                try:
+                    class_name = "".join([s.title() for s in mechanic.split("_")])
+                except AttributeError:
+                    raise exceptions.InvalidContentType(
+                        f"``{mechanic}`` must either be string-like, "
+                        f"or inherit from {SuperClass}. "
+                    )
                 mechanic_name = mechanic.replace("_", " ").title()
                 attrs = {"name": mechanic_name, "__doc__": msg, "source": "Unknown"}
                 Mechanic = type(class_name, (SuperClass,), attrs)
         return Mechanic
-    
 
 
 class Creature(Content):
@@ -188,6 +194,19 @@ class Creature(Content):
         return self.perception.modifier + 10
 
     @property
+    def passive_perception(self):
+        """Just a wrapper around passive wisdom."""
+        return self.passive_wisdom
+
+    @property
+    def passive_insight(self):
+        return self.insight.modifier + 10
+
+    @property
+    def passive_investigation(self):
+        return self.investigation.modifier + 10
+
+    @property
     def abilities(self):
         return [self.strength, self.dexterity, self.constitution,
                 self.intelligence, self.wisdom, self.charisma]
@@ -200,3 +219,7 @@ class Creature(Content):
                 self.medicine, self.nature, self.perception,
                 self.performance, self.persuasion, self.religion,
                 self.sleight_of_hand, self.stealth, self.survival]
+    
+    @property
+    def is_spellcaster(self):
+        raise NotImplementedError

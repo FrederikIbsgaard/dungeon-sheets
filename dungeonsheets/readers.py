@@ -9,6 +9,8 @@ from typing import Union
 from pathlib import Path
 
 from dungeonsheets import exceptions
+from dungeonsheets.magic_items import MagicItem
+from dungeonsheets.content_registry import find_content
 
 log = logging.getLogger(__file__)
 
@@ -431,6 +433,30 @@ class FoundryCharacterReader(JSONCharacterReader):
                     item_name += f"({quantity})"
                 yield item_name.lower()
 
+    def magic_items(self):
+        """Loads magic items. If not defined, try to figure out its
+        properties.
+
+        """
+        item_types = ["weapon", "armor", "equipment"]
+        items = [item for item in self.json_data()['items']
+                 if item['type'] in item_types]
+        from pprint import pprint
+        magic_items = [item for item in items if item['data']['rarity'] not in ["Common", ""]]
+        # Convert magic items into classes
+        def make_magic_item(data):
+            try:
+                item = find_content(data['name'], valid_classes=[MagicItem])
+            except exceptions.ContentNotFound:
+                # Make a generic version based on the JSON attributes
+                warnings.warn("Skipping unknown magic item: " + data['name'])
+                item_name = data['name'].replace(' ', '')
+                item = type(item_name, (MagicItem,), {})
+            return item
+        
+        magic_items = [make_magic_item(item) for item in magic_items]
+        return magic_items
+    
     def class_levels(self):
         for item in self.json_data()["items"]:
             if item["type"] == "class":
@@ -451,6 +477,13 @@ class FoundryCharacterReader(JSONCharacterReader):
         spell_names = (d["name"] for d in spells)
         yield from spell_names
 
+    def features(self):
+        all_items = self.json_data()['items']
+        feat_names = (item['name'] for item in all_items if item['type'] == "feat")
+        # Clean up the names for consistency
+        feat_names = (name.lower() for name in feat_names)
+        yield from feat_names
+
     def __call__(self):
         """Create a character property dictionary from the JSON file."""
         # Parse the json tree to get character properties
@@ -465,6 +498,7 @@ class FoundryCharacterReader(JSONCharacterReader):
         classes, levels = zip(*self.class_levels())
         char_props["levels"] = list(levels)
         char_props["classes"] = list(classes)
+        char_props["features"] = list(self.features())
         # Attributes
         attribute_names = {
             "str": "strength",
@@ -475,14 +509,14 @@ class FoundryCharacterReader(JSONCharacterReader):
             "cha": "charisma",
         }
         abilities = self.json_data()["data"]["abilities"]
-        save_proficiences = []
+        save_proficiencies = []
         for abbr, attr in attribute_names.items():
             char_props[attr] = self.as_int(abilities[abbr]["value"])
             # Check proficiency
             is_proficient = bool(abilities[abbr]["proficient"])
             if is_proficient:
-                save_proficiences.append(attr)
-        char_props["saving_throw_proficiencies"] = save_proficiences
+                save_proficiencies.append(attr)
+        char_props["saving_throw_proficiencies"] = save_proficiencies
         # Skill proficiencies
         skill_names = [
             "acrobatics",
@@ -544,6 +578,8 @@ class FoundryCharacterReader(JSONCharacterReader):
         char_props["equipment"] = ", ".join(self.equipment())
         char_props["armor"] = self.armor()
         char_props["shield"] = self.shield()
+        # Magic items
+        char_props["magic_items"] = self.magic_items()
         # Personality, etc
         char_props["personality_traits"] = details["trait"].strip()
         char_props["flaws"] = details["flaw"].strip()
@@ -555,12 +591,10 @@ class FoundryCharacterReader(JSONCharacterReader):
         # Some unused values
         warn_msg = (
             "Importing the following traits from JSON is not yet supported: "
-            "magic_items, attacks_and_spellcasting, "
-            "infusions, wild_shapes."
+            "attacks_and_spellcasting, infusions, wild_shapes."
         )
         warnings.warn(warn_msg)
         log.warning(warn_msg)
-        char_props["magic_items"] = ()
         char_props["attacks_and_spellcasting"] = ""
         char_props["infusions"] = []
         char_props["wild_shapes"] = []

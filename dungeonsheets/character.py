@@ -3,6 +3,7 @@ import os
 import re
 import warnings
 import math
+import logging
 from types import ModuleType
 from typing import Sequence, Union, MutableMapping
 
@@ -25,6 +26,10 @@ from dungeonsheets.content_registry import find_content
 from dungeonsheets.weapons import Weapon
 from dungeonsheets.content import Creature
 from dungeonsheets.dice import combine_dice
+from dungeonsheets.equipment_reader import equipment_weight_parser
+
+
+log = logging.getLogger(__name__)
 
 
 dice_re = re.compile(r"(\d+)d(\d+)")
@@ -86,6 +91,10 @@ class Character(Creature):
     attacks_and_spellcasting = ""
     class_list = list()
     _background = None
+    _companions = []
+    _carrying_capacity = 0
+    _carrying_weight = 0
+    equipment_weight_dict = {}
 
     # Characteristics
     personality_traits = (
@@ -380,6 +389,7 @@ class Character(Creature):
     @property
     def weapon_proficiencies(self):
         wp = set(self.other_weapon_proficiencies)
+        wp |= {weapons.Unarmed}  # Everyone is proficient in unarmed strikes
         if self.num_classes > 0:
             wp |= set(self.primary_class.weapon_proficiencies)
         if self.num_classes > 1:
@@ -467,11 +477,11 @@ class Character(Creature):
     @property
     def spellcasting_classes_excluding_warlock(self):
         return [c for c in self.spellcasting_classes if not type(c) == classes.Warlock]
-
+    
     @property
     def is_spellcaster(self):
         return len(self.spellcasting_classes) > 0
-
+    
     def spell_slots(self, spell_level):
         warlock_slots = 0
         for c in self.spellcasting_classes:
@@ -562,7 +572,7 @@ class Character(Creature):
                         SuperClass=magic_items.MagicItem,
                         warning_message=msg,
                     )
-                    self.magic_items.append(ThisMagicItem(owner=self))
+                    self.magic_items.append(ThisMagicItem(wielder=self))
             elif attr == "weapon_proficiencies":
                 self.other_weapon_proficiencies = ()
                 msg = 'Magic Item "{}" not defined. Please add it to ``weapons.py``'
@@ -747,17 +757,39 @@ class Character(Creature):
             featS = featS[:N] + ["(...)"]
         featS += info_list
         return "\n\n".join(featS)
+
+    @property
+    def carrying_capacity(self):
+        _ccModD = {"tiny":0.5, "small":1, "medium":1,
+                   "large":2, "huge":4, "gargantum":8}
+        cc_mod = _ccModD[self.race.size.lower()]
+        return 15*self.strength.value*cc_mod
+            
+    @property
+    def carrying_weight(self):
+        weight = equipment_weight_parser(self.equipment, 
+                                         self.equipment_weight_dict)
+        weight += sum([w.weight for w in self.weapons])
+        if self.armor:
+            weight += self.armor.weight
+        if self.shield:
+            weight += 6
+        weight += sum([self.cp, self.sp, self.ep, self.gp, self.pp])/50
+        return round(weight, 2)
     
     @property
     def equipment_text(self):
         eq_list = []
-        if hasattr(self, "magic_items"):
+        if hasattr(self, "magic_items") and len(self.magic_items) > 0:
             eq_list += ["**Magic Items**"]
             eq_list += [item.name for item in self.magic_items]
-        if hasattr(self, "equipment"):
+        if hasattr(self, "equipment") and len(self.equipment.strip()) > 0:
             eq_list += ["**Other Equipment**"]
             eq_list += [text.strip() for text in self.equipment.split("\n")
                      if not(text.isspace())]
+        cw, cc = self.carrying_weight, self.carrying_capacity
+        eq_list += [f"**Weight:** {cw} lb\n\n**Capacity:** {cc} lb"]
+        
         return "\n\n".join(eq_list)
     
     @property
@@ -962,6 +994,42 @@ class Character(Creature):
             self.Druid.wild_shapes = new_shapes
 
     @property
+    def ranger_beast(self):
+        if hasattr(self, "Ranger"):
+            return self.Ranger.ranger_beast
+        else:
+            return None
+    
+    @ranger_beast.setter
+    def ranger_beast(self, beast):
+        msg = (
+            f"Companion '{beast}' not found. Please add it to"
+                        " ``monsters.py``" )
+        beast = self._resolve_mechanic(beast, monsters.Monster, msg)
+        self.Ranger.ranger_beast = (beast(), self.proficiency_bonus)
+        
+    @property
+    def companions(self):
+        """Return the list of companions and summonables"""
+        companions = [compa for compa in self._companions]
+        if self.ranger_beast:
+            companions.append(self.ranger_beast)
+        return companions
+
+    @companions.setter
+    def companions(self, compas):
+        companions_list = []
+        # Retrieve the actual monster classes if possible
+        for compa in compas:
+            msg = (
+                f"Companion '{compa}' not found. Please add it to"
+                            " ``monsters.py``" )
+            new_compa = self._resolve_mechanic(compa, monsters.Monster, msg)
+            companions_list.append(new_compa())
+        # Save the updated list for later
+        self._companions = companions_list
+
+    @property
     def infusions_text(self):
         if hasattr(self, "Artificer"):
             return tuple([i.name for i in self.infusions])
@@ -997,6 +1065,9 @@ class Character(Creature):
             char_props["levels"] = [str(char_props.pop("level"))]
         # Create the character with loaded properties
         char = Cls(**char_props)
+        log.info(f"Imported character: {char}")
+        log.debug(f"New character classes: {char.class_list} ({char.levels})")
+        log.debug(f"New character subclasses: {char.subclasses}")
         return char
 
     def save(self, filename, template_file="character_template.txt"):

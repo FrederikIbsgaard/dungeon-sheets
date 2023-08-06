@@ -1012,7 +1012,11 @@ You can cast bestow curse once without expending a spell slot. You can’t do so
     
     """
     
+<<<<<<< HEAD
     name = "Brand of the Sapping Scar"
+=======
+    name = "Unsealed Arcana"
+>>>>>>> origin/master
     source = "Blood Hunter (Order of the Profane Soul)"
     
     
@@ -1021,5 +1025,9 @@ class BloodCurseOfTheSouleater(Feature):
     
     """
     
+<<<<<<< HEAD
     name = "Brand of the Sapping Scar"
+=======
+    name = "Blood Curse of the Souleater"
+>>>>>>> origin/master
     source = "Blood Hunter (Order of the Profane Soul)"
