@@ -101,7 +101,6 @@ class HomunculusServant(Infusion):
 
     name = "Homunculus Servant"
     item = "A gem worth at least 100gp or a dragonshard"
-    prerequisite = "6th-level artificer"
 
 
 class RadiantWeapon(Infusion):
@@ -154,6 +153,70 @@ class ReplicateMagicItem(Infusion):
     """
 
     name = "Replicate Magic Item"
+
+class BagOfHolding(Infusion):
+    """This bag has an interior space considerably larger than its outside dimensions, 
+    roughly 2 feet in diameter at the mouth and 4 feet deep. The bag can hold up to 500 pounds, 
+    not exceeding a volume of 64 cubic feet. The bag weighs 15 pounds, regardless of its contents. 
+    Retrieving an item from the bag requires an action.
+    
+    If the bag is overloaded, pierced, or torn, it ruptures and is destroyed, and its contents are scattered in the Astral Plane. 
+    If the bag is turned inside out, its contents spill forth, unharmed, but the bag must be put right before it can be used again. 
+    Breathing creatures inside the bag can survive up to a number of minutes equal to 10 divided by the number of creatures (minimum 1 minute), 
+    after which time they begin to suffocate.
+    
+    Placing a bag of holding inside an extradimensional space created by a handy haversack, portable hole, 
+    or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. 
+    Any creature within 10 feet of the gate is sucked through it to a random location on the Astral Plane. The gate then closes. 
+    The gate is one-way only and cant be reopened.
+    """
+
+    name = "Bag of Holding"
+
+class AlchemyJug(Infusion):
+    """This ceramic jug appears to be able to hold a gallon of liquid and weighs 12 pounds whether full or empty. 
+    Sloshing sounds can be heard from within the jug when it is shaken, even if the jug is empty.
+    You can use an action and name one liquid from the table below to cause the jug to produce the chosen liquid. 
+    Afterward, you can uncork the jug as an action and pour that liquid out, up to 2 gallons per minute. 
+    The maximum amount of liquid the jug can produce depends on the liquid you named.
+    Once the jug starts producing a liquid, it can't produce a different one, or more of one that has reached its maximum, until the next dawn.
+    
+
+    Liquid Max Amount:
+
+    - Acid 236 ml
+    - Basic poison 15 ml
+    - Beer 15 liter
+    - Honey 3.8 liter
+    - Mayonnaise 7.5 liter
+    - Oil 1 liter
+    - Vinegar 7.5 liter
+    - Water, fresh 30 liter
+    - Water, salt 45 liter
+    - Wine 3.8 liter
+    """
+
+    name = "Alchemy Jug"
+
+class SendingStones(Infusion):
+    """Sending stones come in pairs, with each smooth stone carved to match the other so the pairing is easily recognized.
+    While you touch one stone, you can use an action to cast the sending spell from it. 
+    The target is the bearer of the other stone. 
+    If no creature bears the other stone, you know that fact as soon as you use the stone and don't cast the spell.
+
+    Once sending is cast through the stones, they can't be used again until the next dawn. 
+    If one of the stones in a pair is destroyed, the other one becomes nonmagical.
+    """
+
+    name = "Sending Stones"
+
+class CapOfWaterBreathing(Infusion):
+    """While wearing this cap underwater, you can speak its command word as an action to create a bubble of air around your head. 
+    It allows you to breathe normally underwater. 
+    This bubble stays with you until you speak the command word again, the cap is removed, or you are no longer underwater.
+    """
+
+    name = "Cap of Water Breathing"
 
 
 class RepulsionShield(Infusion):

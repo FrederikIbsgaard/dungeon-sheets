@@ -757,3 +757,29 @@ class GustOfWind(Spell):
     ritual = False
     magic_school = "Evocation"
     classes = ("Druid", "Sorcerer", "Wizard")
+
+class GlacialRebuke(Spell):
+    """Reaction: you are being damaged by a creature within 60 feet of you that you can
+    see.
+
+    You point your finger, and the creature that damaged you is momentarily
+    surrounded by freezing cold. The creature must make a Dexterity saving throw.
+    It takes 2d10 cold damage on a failed save, or half as much damage on a
+    successful one.
+
+    **At Higher Levels:** When you cast this spell using a spell slot
+    of 2nd level or higher, the damage increases by 1d10 for each slot level above
+    1st.
+    """
+
+    name = "Glacial Rebuke"
+    level = 1
+    casting_time = "Special"
+    casting_range = "60 feet"
+    components = ("V", "S")
+    materials = ""
+    duration = "Instantaneous"
+    ritual = False
+    magic_school = "Evocation"
+    classes = ("Warlock",)
+

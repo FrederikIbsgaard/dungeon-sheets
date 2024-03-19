@@ -369,6 +369,12 @@ class HellishResistance(Feature):
     name = "Hellish Resistance"
     source = "Race (Tiefling)"
 
+class GlacialResistance(Feature):
+    """You have resistance to cold damage."""
+
+    name = "Glacial Resistance"
+    source = "Race (Silver Tiefling)"
+
 
 class InfernalLegacy(Feature):
     """You know the thaumaturgy cantrip.  Once you reach 3rd level, you can cast
@@ -380,6 +386,18 @@ class InfernalLegacy(Feature):
 
     name = "Infernal Legacy"
     source = "Race (Tiefling)"
+    spells_known = spells_prepared = (spells.Thaumaturgy,)
+
+class SilveryLegacy(Feature):
+    """You know the thaumaturgy cantrip.  Once you reach 3rd level, you can cast
+    the glacial rebuke spell once per day as a 2nd-level spell. Once you reach
+    5th level, you can also cast the darkness spell once per day. Charisma is
+    your spellcasting ability for these spells.
+
+    """
+
+    name = "Silvery Legacy"
+    source = "Race (Silver Tiefling)"
     spells_known = spells_prepared = (spells.Thaumaturgy,)
 
 

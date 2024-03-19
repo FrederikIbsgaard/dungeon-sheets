@@ -274,6 +274,15 @@ class Tiefling(Race):
     languages = ("Common", "Infernal")
     features = (feats.Darkvision, feats.HellishResistance, feats.InfernalLegacy)
 
+class SilverTiefling(Race):
+    name = "Silver Tiefling"
+    size = "medium"
+    speed = 30
+    intelligence_bonus = 1
+    charisma_bonus = 2
+    languages = ("Common", "Infernal")
+    features = (feats.Darkvision, feats.GlacialResistance, feats.SilveryLegacy)
+
 
 # Aasimar
 class _Aasimar(Race):
@@ -583,6 +592,7 @@ PHB_races = [
     HalfElf,
     HalfOrc,
     Tiefling,
+    SilverTiefling,
     Human,
 ]
 
